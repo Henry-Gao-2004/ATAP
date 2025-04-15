@@ -55,7 +55,7 @@ def extract_info(email: str) -> Tuple[bool, list[str]]:
         "messages": [
             {
                 "role": "user",
-                "content": "Extract and print the company, position and result separated with comma. The result is 'Accepted' if it is a job offer and 'Rejected' otherwise. The email is: "+email
+                "content": "Extract and print the company, position and result separated with comma. The result is 'Accepted' if it is a job offer, 'Action' if further action is required and 'Rejected' otherwise. The email is: "+email
             }
         ]
     
