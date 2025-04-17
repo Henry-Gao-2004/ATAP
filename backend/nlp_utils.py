@@ -3,7 +3,7 @@ from typing import Tuple
 import requests
 
 def is_application(email: str) -> Tuple[bool, str]:
-    url = "http://localhost:11434/api/chat"
+    url = "http://192.168.56.1:11434/api/chat"
     payload = {
         "model": "gemma3:latest",
         "messages": [
@@ -26,7 +26,7 @@ def is_application(email: str) -> Tuple[bool, str]:
         return False, response.status_code
     
 def classify_email(email: str) -> Tuple[bool, str]:
-    url = "http://localhost:11434/api/chat"
+    url = "http://192.168.56.1:11434/api/chat"
     payload = {
         "model": "gemma3:latest",
         "messages": [
@@ -49,13 +49,13 @@ def classify_email(email: str) -> Tuple[bool, str]:
         return False, response.status_code
 
 def extract_info(email: str) -> Tuple[bool, list[str]]:
-    url = "http://localhost:11434/api/chat"
+    url = "http://192.168.56.1:11434/api/chat"
     payload = {
         "model": "gemma3:latest",
         "messages": [
             {
                 "role": "user",
-                "content": "Extract and print the company, position and result separated with comma. The result is 'Accepted' if it is a job offer, 'Action' if further action is required and 'Rejected' otherwise. The email is: "+email
+                "content": "Extract and print the company, position, date in format YYYYMMDD and result separated with comma. The result is 'Accepted' if it is a job offer, 'Action' if further action is required and 'Rejected' otherwise. The email is: "+email
             }
         ]
     
