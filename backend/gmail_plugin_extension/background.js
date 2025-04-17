@@ -1,42 +1,90 @@
 let lastChecked = Date.now();
 
-async function fetchAndForwardEmails(token) {
-  const query = `after:${Math.floor(lastChecked / 1000)}`;
-  const res = await fetch(`https://www.googleapis.com/gmail/v1/users/me/messages?q=${query}`, {
-    headers: {
-      Authorization: `Bearer ${token}`
-    }
-  });
-  const data = await res.json();
-
-  if (data.messages) {
-    for (const msg of data.messages) {
-      const msgRes = await fetch(`https://www.googleapis.com/gmail/v1/users/me/messages/${msg.id}?format=full`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      const msgData = await msgRes.json();
-      const payload = {
-        subject: msgData.payload.headers.find(h => h.name === "Subject")?.value || "",
-        from: msgData.payload.headers.find(h => h.name === "From")?.value || "",
-        to: msgData.payload.headers.find(h => h.name === "To")?.value || "",
-        body: atob(msgData.payload?.body?.data || ''),
-        messageId: msg.id
-      };
-
-      // Forward it
-      await fetch('https://192.168.56.1:5000/new-mail', {
-        method: 'POST',
-        body: JSON.stringify(payload),
-        headers: { 'Content-Type': 'application/json' }
-      });
-    }
-  }
-
-  lastChecked = Date.now();
-}
-
-chrome.identity.getAuthToken({ interactive: true }, (token) => {
-  if (token) {
-    setInterval(() => fetchAndForwardEmails(token), 30000); // Check every 30s
-  }
+chrome.runtime.onInstalled.addListener(() => {
+    console.log("Extension installed");
 });
+
+chrome.runtime.onMessage.addListener((msg) => {
+    if (msg.startPolling) {
+        chrome.alarms.create("pollGmail", { periodInMinutes: 0.1 });
+        console.log("Polling started");
+    }
+});
+
+chrome.alarms.onAlarm.addListener((alarm) => {
+    if (alarm.name === "pollGmail") {
+        chrome.storage.local.get("gmailToken", ({ gmailToken }) => {
+            if (gmailToken) {
+                checkForNewEmails(gmailToken);
+            }
+        });
+    }
+});
+
+async function checkForNewEmails(token) {
+    const query = `after:${Math.floor(lastChecked / 1000)}`;
+    lastChecked = Date.now();
+
+    try {
+        const res = await fetch(
+            `https://www.googleapis.com/gmail/v1/users/me/messages?q=${encodeURIComponent(query)}`,
+            {
+                method: "GET",
+                headers: { Authorization: `Bearer ${token}`},
+                Accept: "application/json"
+            }
+        );
+        const data = await res.json();
+        if (data.error) {
+            if (data.error.code === 401) {
+                console.log("Token expired. Reauthorizing...");
+                chrome.storage.local.get("gmailToken", ({ gmailToken }) => {
+                    console.log(gmailToken)
+                    if (gmailToken) {
+                        fetch("https://www.googleapis.com/oauth2/v3/tokeninfo?access_token=" + token)
+                            .then(res => res.json())
+                            .then(data => console.log("Token scopes:", data.scope));
+                    }
+                });
+                chrome.storage.local.remove("gmailToken");
+                chrome.identity.getAuthToken({ interactive: true }, (newToken) => {
+                    if (chrome.runtime.lastError) {
+                        console.error("Auth error:", chrome.runtime.lastError.message);
+                    } else {
+                        chrome.storage.local.set({ gmailToken: newToken }, () => {
+                            checkForNewEmails(newToken);
+                        });
+                    }
+                });
+            }
+            else {
+                console.error("Error fetching emails:", data.error);
+            }
+            return;
+        }
+        if (data.messages && data.messages.length > 0) {
+            console.log("Response data:", data);
+            for (const msg of data.messages) {
+                const msgRes = await fetch(
+                    `https://www.googleapis.com/gmail/v1/users/me/messages/${msg.id}?format=full`,
+                    {
+                        method: "GET",
+                        headers: { Authorization: `Bearer ${token}` }
+                    }
+                );
+                const msgData = await msgRes.json();
+                
+
+                await fetch("http://192.168.56.1:5000/new-mail", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(msgData)
+                });
+            }
+        } else {
+            console.log("No new messages.");
+        }
+    } catch (error) {
+        console.error("Error fetching emails:", error);
+    }
+}

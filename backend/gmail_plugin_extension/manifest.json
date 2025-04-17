@@ -1,30 +1,26 @@
 {
-    "manifest_version": 3,
-    "name": "Gmail Auto Forwarder",
-    "version": "1.0",
-    "description": "Automatically forwards new Gmail emails to a webhook URL.",
-    "permissions": [
-      "identity",
-      "storage"
-    ],
-    "host_permissions": [
-      "https://www.googleapis.com/",
-      "http://192.168.56.1"
-    ],
-    "oauth2": {
-      "client_id": "81363288894-3j79eoa6n44fi6nee0lq9ibancpcrfb4.apps.googleusercontent.com",
-      "scopes": [
-        "https://www.googleapis.com/auth/gmail.readonly"
-      ]
-    },
-    "background": {
-      "service_worker": "background.js"
-    },
-    "action": {
-      "default_popup": "oauth2.html",
-      "default_icon": {
-        "16": "icons/icon.png"
-      }
-    }
+  "manifest_version": 3,
+  "name": "Gmail Auto Forwarder",
+  "version": "1.0",
+  "permissions": [
+    "identity",
+    "alarms",
+    "storage"
+  ],
+  "host_permissions": [
+    "https://www.googleapis.com/",
+    "http://192.168.56.1/"
+  ],
+  "oauth2": {
+    "client_id": "81363288894-3j79eoa6n44fi6nee0lq9ibancpcrfb4.apps.googleusercontent.com",
+    "scopes": [
+      "https://www.googleapis.com/auth/gmail.readonly"
+    ]
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "oauth2.html"
   }
-  
+}

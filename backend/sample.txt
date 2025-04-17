@@ -1,0 +1,36 @@
+{
+    'id': '196453c280ac3283', 
+    'threadId': '196453c0ff43d499', 
+    'labelIds': [
+        'UNREAD', 'IMPORTANT', 'SENT', 'INBOX'
+    ], 
+    'snippet': 'blablabla', 
+    'payload': {
+        'partId': '', 
+        'mimeType': 'multipart/alternative', 
+        'filename': '', 
+        'headers': [
+            {'name': 'MIME-Version', 'value': '1.0'},
+            {'name': 'Date', 'value': 'Thu,17 Apr 2025 15: 31: 32 -0400'},
+            {'name': 'Message-ID', 'value': '<CAFyJ3=0_6YvrA2Oj6A5sYk-ozxwco50Pa4h07jjyWVG8eHp-DQ@mail.gmail.com>'},
+            {'name': 'Subject', 'value': 'test5'},
+            {'name': 'From', 'value': 'Henry Gao <henrygao04@gmail.com>'},
+            {'name': 'To', 'value': 'Henry Gao <henrygao04@gmail.com>'},
+            {'name': 'Content-Type', 'value': 'multipart/alternative; boundary="000000000000fe4dd30632fe724d"'}
+        ], 
+        'body': {'size': 0}, 
+        'parts': [
+            {'partId': '0', 'mimeType': 'text/plain', 'filename': '', 'headers': [
+                    {'name': 'Content-Type', 'value': 'text/plain; charset="UTF-8"'}
+                ], 
+                'body': {'size': 11, 'data': 'YmxhYmxhYmxhDQo='}
+            },
+            {'partId': '1', 'mimeType': 'text/html', 'filename': '', 'headers': [
+                    {'name': 'Content-Type', 'value': 'text/html; charset="UTF-8"'
+                    }
+                ], 'body': {'size': 32, 'data': 'PGRpdiBkaXI9Imx0ciI-YmxhYmxhYmxhPC9kaXY-DQo='
+                }
+            }
+        ]
+    }, 'sizeEstimate': 546, 'historyId': '1178616', 'internalDate': '1744918292000'
+}
