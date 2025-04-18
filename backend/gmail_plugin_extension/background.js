@@ -73,8 +73,6 @@ async function checkForNewEmails(token) {
                     }
                 );
                 const msgData = await msgRes.json();
-                
-
                 await fetch("http://192.168.56.1:5000/new-mail", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
