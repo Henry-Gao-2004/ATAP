@@ -187,8 +187,8 @@
             <div class="tab active" onclick="openTab(event, 'home')">Home</div>
             <div class="tab" onclick="openTab(event, 'clubs')">Clubs</div>
             <div class="tab" onclick="openTab(event, 'internships')">Internships</div>
-            <div class="tab" onclick="openTab(event, 'masters')">Masters</div>
-            <div class="tab" onclick="openTab(event, 'scholar')">Scholar</div>
+            <div class="tab" onclick="openTab(event, 'masters')">Masters Programs</div>
+            <div class="tab" onclick="openTab(event, 'scholar')">Scholarships</div>
         </div>
         
         <!-- Home Tab -->
@@ -219,9 +219,8 @@
                     <tr>
                         <th>Company</th>
                         <th>Application</th>
-                        <th>Assessment</th>
                         <th>Interview</th>
-                        <th>Offer</th>
+                        <th>Decision</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -256,7 +255,7 @@
             <div class="no-results" id="home-no-results">No matching applications found</div>
         </div>
         
-        <!-- Masters Tab -->
+        <!-- Masters Programs Tab -->
         <div id="masters" class="tab-content">
             <table id="masters-table">
                 <thead>
@@ -302,6 +301,13 @@
     </div>
 
     <script>
+
+        // Configure (connecting backend to frontend)
+        const API_BASE_URL = 'http://localhost:8000'; // change 
+
+
+
+
         function openTab(evt, tabName) {
             // Hide all tab contents
             var tabContents = document.getElementsByClassName("tab-content");
@@ -318,57 +324,234 @@
             // Show the current tab and add active class
             document.getElementById(tabName).classList.add("active");
             evt.currentTarget.classList.add("active");
+
+            // Load data when tab is clicked
+            loadTabData(tabName);
         }
 
-        // NEED TO FIX -- Call NLP backend to populate the tables
-        function populateTableData(category, applications) {
-            const table = document.getElementById(`${category}-table`);
-            const tbody = table.querySelector('tbody');
-            
-            // Clear existing rows (except the empty message)
-            while (tbody.firstChild) {
-                tbody.removeChild(tbody.firstChild);
-            }
-            
-            if (applications.length === 0) {
-                const row = document.createElement('tr');
-                row.className = 'empty-message';
-                row.innerHTML = '<td colspan="4">No applications detected yet</td>';
-                tbody.appendChild(row);
-                return;
-            }
-            
-            applications.forEach(app => {
-                const row = document.createElement('tr');
-                
-                // Application Name
-                const nameCell = document.createElement('td');
-                nameCell.textContent = app.name || 'Unknown Application';
-                row.appendChild(nameCell);
-                
-                // Type
-                const typeCell = document.createElement('td');
-                typeCell.className = 'application-type';
-                typeCell.textContent = app.type || 'Unknown Type';
-                row.appendChild(typeCell);
-                
-                // Last Updated
-                const updatedCell = document.createElement('td');
-                updatedCell.className = 'last-updated';
-                updatedCell.textContent = app.lastUpdated ? `Updated ${app.lastUpdated}` : 'Unknown';
-                row.appendChild(updatedCell);
-                
-                // Stage
-                const stageCell = document.createElement('td');
-                const stageSpan = document.createElement('span');
-                stageSpan.className = `stage stage-${app.stage?.toLowerCase() || 'unknown'}`;
-                stageSpan.textContent = app.stage || 'Unknown';
-                stageCell.appendChild(stageSpan);
-                row.appendChild(stageCell);
-                
-                tbody.appendChild(row);
+        // Load data for a specific tab
+        function loadTabData(tabName) {
+            showLoading(tabName);
+            // Map frontend tab names to API endpoints
+            const endpointMap = {
+                'home': null, // Special case - we'll combine data from all endpoints
+                'internships': 'internships',
+                'masters': 'masters',
+                'scholar': 'scholarships',
+                'clubs': 'clubs'
+        };
+
+               
+        if (tabName === 'home') {
+            // For home tab, we'll fetch data from all endpoints
+            Promise.all([
+                fetchData('internships'),
+                fetchData('masters'),
+                fetchData('scholarships'),
+                fetchData('clubs')
+            ]).then(([internships, masters, scholarships, clubs]) => {
+                // Combine all data for the home view
+                const combined = [
+                    ...internships.map(app => formatForHome(app, 'Internship')),
+                    ...masters.map(app => formatForHome(app, 'Masters')),
+                    ...scholarships.map(app => formatForHome(app, 'Scholarship')),
+                    ...clubs.map(app => formatForHome(app, 'Club'))
+                ];
+                populateHomeTable(combined);
+            }).catch(error => {
+                console.error('Error fetching data:', error);
+                showError(tabName, 'Failed to load applications');
             });
+        } else {
+            const endpoint = endpointMap[tabName];
+            if (endpoint) {
+                fetchData(endpoint)
+                    .then(data => populateGenericTable(tabName, data))
+                    .catch(error => {
+                        console.error('Error fetching data:', error);
+                        showError(tabName, 'Failed to load applications');
+                    });
+            }
         }
+    }
+    
+    // Fetch data from API
+    function fetchData(endpoint) {
+        return fetch(`${API_BASE_URL}/${endpoint}?limit=100`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            });
+    }
+    
+    // Format data for home table view
+    function formatForHome(app, type) {
+        // This depends on your database schema - adjust as needed
+        return {
+            name: app.key || app.company || app.school || app.sponsor || app.club || 'Unknown',
+            type: type,
+            lastUpdated: app.last_updated || 'Unknown',
+            stage: app.status || 'Unknown'
+        };
+    }
+
+    // Show loading state
+    function showLoading(tabName) {
+        const table = document.getElementById(`${tabName}-table`);
+        const tbody = table.querySelector('tbody');
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align: center;">Loading applications...</td></tr>';
+    }
+    
+    // Show error state
+    function showError(tabName, message) {
+        const table = document.getElementById(`${tabName}-table`);
+        const tbody = table.querySelector('tbody');
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: red;">${message}</td></tr>`;
+    }
+
+    // Populate the home table (special format)
+    function populateHomeTable(applications) {
+        const table = document.getElementById('home-table');
+        const tbody = table.querySelector('tbody');
+        
+        // Clear existing rows
+        tbody.innerHTML = '';
+        
+        if (applications.length === 0) {
+            const row = document.createElement('tr');
+            row.className = 'empty-message';
+            row.innerHTML = '<td colspan="4">No applications detected yet</td>';
+            tbody.appendChild(row);
+            return;
+        }
+        
+        applications.forEach(app => {
+            const row = document.createElement('tr');
+            
+            // Application Name
+            const nameCell = document.createElement('td');
+            nameCell.textContent = app.name;
+            row.appendChild(nameCell);
+            
+            // Type
+            const typeCell = document.createElement('td');
+            typeCell.className = 'application-type';
+            typeCell.textContent = app.type;
+            row.appendChild(typeCell);
+            
+            // Last Updated
+            const updatedCell = document.createElement('td');
+            updatedCell.className = 'last-updated';
+            updatedCell.textContent = app.lastUpdated;
+            row.appendChild(updatedCell);
+            
+            // Stage
+            const stageCell = document.createElement('td');
+            const stageSpan = document.createElement('span');
+            stageSpan.className = `stage stage-${app.stage.toLowerCase()}`;
+            stageSpan.textContent = app.stage;
+            stageCell.appendChild(stageSpan);
+            row.appendChild(stageCell);
+            
+            tbody.appendChild(row);
+        });
+    }
+
+    // Populate other tables (clubs, internships, etc.)
+    function populateGenericTable(tabName, applications) {
+        const table = document.getElementById(`${tabName}-table`);
+        const tbody = table.querySelector('tbody');
+        const headers = table.querySelectorAll('thead th');
+        
+        // Clear existing rows
+        tbody.innerHTML = '';
+        
+        if (applications.length === 0) {
+            const row = document.createElement('tr');
+            row.className = 'empty-message';
+            row.innerHTML = `<td colspan="${headers.length}">No applications detected yet</td>`;
+            tbody.appendChild(row);
+            return;
+        }
+        
+        applications.forEach(app => {
+            const row = document.createElement('tr');
+            
+            // Create cells based on table headers
+            headers.forEach(header => {
+                const cell = document.createElement('td');
+                const columnName = header.textContent.toLowerCase();
+                
+                // Map API fields to table columns
+                const fieldMap = {
+                    'company': app.key || app.company || app.school || app.sponsor || app.club,
+                    'application': app.app_result || 'Unknown',
+                    'assessment': app.assessment_result || 'Unknown',
+                    'interview': app.interview_result || 'Unknown',
+                    'offer': app.offer_result || 'Unknown',
+                    'decision': app.decision_result || 'Unknown'
+                };
+                
+                cell.textContent = fieldMap[columnName] || '-';
+                
+                // Add special formatting for status fields
+                if (columnName === 'assessment' || columnName === 'interview' || 
+                    columnName === 'offer' || columnName === 'decision') {
+                    cell.className = `stage stage-${cell.textContent.toLowerCase()}`;
+                }
+                
+                row.appendChild(cell);
+            });
+            
+            tbody.appendChild(row);
+        });
+    }
+
+    // Search functionality
+    document.getElementById('searchInput').addEventListener('input', function(e) {
+        const searchTerm = e.target.value.toLowerCase();
+        const activeTab = document.querySelector('.tab-content.active');
+        const table = activeTab.querySelector('table');
+        const rows = table.querySelectorAll('tbody tr');
+        let hasResults = false;
+        
+        rows.forEach(row => {
+            if (row.classList.contains('empty-message')) {
+                return; // Skip the empty message row
+            }
+            
+            const text = row.textContent.toLowerCase();
+            if (text.includes(searchTerm)) {
+                row.style.display = '';
+                hasResults = true;
+            } else {
+                row.style.display = 'none';
+            }
+        });
+        
+        // Show/hide no results message
+        const noResults = activeTab.querySelector('.no-results');
+        if (noResults) {
+            noResults.style.display = hasResults || searchTerm === '' ? 'none' : 'block';
+        }
+    });
+
+    // Load initial data when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        loadTabData('home');
+        
+        // Auto-refresh data every 5 minutes
+        setInterval(() => {
+            const activeTab = document.querySelector('.tab-content.active');
+            if (activeTab) {
+                const tabName = document.querySelector('.tab.active').getAttribute('onclick').split("'")[1];
+                loadTabData(tabName);
+            }
+        }, 300000); // 5 minutes
+    });
+        
     </script>
 </body>
 </html>
