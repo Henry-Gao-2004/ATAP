@@ -93,3 +93,6 @@ def classify_category(email: str) -> Tuple[bool, list[str]]:
         return True, response_text.strip().split(",")
     else:
         return False, response.status_code
+    
+
+    
