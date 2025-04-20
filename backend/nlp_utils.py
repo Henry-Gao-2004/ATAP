@@ -71,7 +71,7 @@ def extract_info(email: str) -> Tuple[bool, list[str]]:
     else:
         return False, response.status_code
     
-def classify_email(email: str) -> Tuple[bool, list[str]]:
+def classify_category(email: str) -> Tuple[bool, list[str]]:
     url = "http://192.168.56.1:11434/api/chat"
     payload = {
         "model": "gemma3:latest",
