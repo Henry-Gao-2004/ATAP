@@ -116,11 +116,13 @@
             width: 100%;
             border-collapse: collapse;
             margin-top: 15px;
+            table-layout: fixed;
         }
         th, td {
             padding: 12px 15px;
             text-align: left;
             border-bottom: 1px solid #ddd;
+            word-wrap: break-word;
         }
         th {
             background-color: #f8f8f8;
@@ -137,6 +139,15 @@
             color: #777;
             font-size: 0.9em;
         }
+        #internships-table th:nth-child(1), #masters-table th:nth-child(1),
+        #scholar-table th:nth-child(1), #clubs-table th:nth-child(1) {
+            width: 25%;
+        }
+        #internships-table th:nth-child(n+2), #masters-table th:nth-child(n+2),
+        #scholar-table th:nth-child(n+2), #clubs-table th:nth-child(n+2) {
+            width: 18.75%; /* 75% divided by 4 columns */
+        }
+
         /* CSS for columns in data table */
         .stage {
             padding: 5px 10px;
@@ -170,6 +181,48 @@
             text-align: center;
             display: none;
         }
+
+        /* Status color classes to update cells */
+        .status-complete {
+            background-color: #ffa500;
+            color: #000;
+        }
+        .status-in-progress {
+            background-color: #90EE90; 
+            color: #000;
+        }
+        .status-rejected {
+            background-color: #ff6b6b; 
+            color: #000;
+        }
+        .status-pending {
+            background-color: #f8f8f8; 
+            color: #555;
+        }
+        .status-not-started {
+            background-color: #ffffff; /* White */
+            color: #999;
+            font-style: italic;
+        }
+
+        /* Status indicators */
+        .status-dot {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        .status-dot-complete {
+            background-color: currentColor;
+        }
+        .status-dot-incomplete {
+            background-color: transparent;
+            border: 2px solid currentColor;
+        }
+
+
+        
     </style>
 </head>
 
@@ -306,8 +359,6 @@
         const API_BASE_URL = 'http://localhost:8000'; // change 
 
 
-
-
         function openTab(evt, tabName) {
             // Hide all tab contents
             var tabContents = document.getElementsByClassName("tab-content");
@@ -334,16 +385,16 @@
             showLoading(tabName);
             // Map frontend tab names to API endpoints
             const endpointMap = {
-                'home': null, // Special case - we'll combine data from all endpoints
+                'home': null, // Special case - combine data from all endpoints
                 'internships': 'internships',
                 'masters': 'masters',
                 'scholar': 'scholarships',
                 'clubs': 'clubs'
         };
 
-               
+            
         if (tabName === 'home') {
-            // For home tab, we'll fetch data from all endpoints
+            // For home tab, fetch data from all endpoints
             Promise.all([
                 fetchData('internships'),
                 fetchData('masters'),
@@ -388,7 +439,7 @@
     
     // Format data for home table view
     function formatForHome(app, type) {
-        // This depends on your database schema - adjust as needed
+        // change based on schema -- GO BACK
         return {
             name: app.key || app.company || app.school || app.sponsor || app.club || 'Unknown',
             type: type,
@@ -408,7 +459,9 @@
     function showError(tabName, message) {
         const table = document.getElementById(`${tabName}-table`);
         const tbody = table.querySelector('tbody');
-        tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: red;">${message}</td></tr>`;
+        const headers = table.querySelectorAll('thead th');
+    
+        tbody.innerHTML = `<tr><td colspan="${headers.length}" style="text-align: center; color: red;">${message}</td></tr>`;
     }
 
     // Populate the home table (special format)
@@ -459,15 +512,13 @@
         });
     }
 
-    // Populate other tables (clubs, internships, etc.)
     function populateGenericTable(tabName, applications) {
         const table = document.getElementById(`${tabName}-table`);
         const tbody = table.querySelector('tbody');
         const headers = table.querySelectorAll('thead th');
-        
-        // Clear existing rows
+    
         tbody.innerHTML = '';
-        
+    
         if (applications.length === 0) {
             const row = document.createElement('tr');
             row.className = 'empty-message';
@@ -475,39 +526,100 @@
             tbody.appendChild(row);
             return;
         }
-        
+    
         applications.forEach(app => {
             const row = document.createElement('tr');
-            
-            // Create cells based on table headers
+        
             headers.forEach(header => {
                 const cell = document.createElement('td');
                 const columnName = header.textContent.toLowerCase();
+            
+                if (columnName === 'company') {
+                    cell.textContent = app.key || 'Unknown';
+                } else {
+                    const { resultField, confField } = getFieldNames(tabName, columnName);
+                    const status = app[resultField] || 'no_update';
+                    const isComplete = app[confField] === 'complete';
                 
-                // Map API fields to table columns
-                const fieldMap = {
-                    'company': app.key || app.company || app.school || app.sponsor || app.club,
-                    'application': app.app_result || 'Unknown',
-                    'assessment': app.assessment_result || 'Unknown',
-                    'interview': app.interview_result || 'Unknown',
-                    'offer': app.offer_result || 'Unknown',
-                    'decision': app.decision_result || 'Unknown'
-                };
+                    cell.className = `status-${status.toLowerCase()}`;
+                    cell.textContent = status.replace('_', ' ').toUpperCase();
+                    cell.setAttribute('data-tooltip', getTooltip(columnName, status, isComplete));
                 
-                cell.textContent = fieldMap[columnName] || '-';
-                
-                // Add special formatting for status fields
-                if (columnName === 'assessment' || columnName === 'interview' || 
-                    columnName === 'offer' || columnName === 'decision') {
-                    cell.className = `stage stage-${cell.textContent.toLowerCase()}`;
+                    // Add completion indicator
+                    const dot = document.createElement('span');
+                    dot.className = isComplete ? 'status-dot status-dot-complete' 
+                                          : 'status-dot status-dot-incomplete';
+                    cell.insertBefore(dot, cell.firstChild);
                 }
-                
+            
                 row.appendChild(cell);
             });
-            
+        
             tbody.appendChild(row);
         });
     }
+
+    // Helper functions
+    function getFieldNames(tabName, columnName) {
+        const fields = {
+            'internships': {
+                'application': { result: 'app_result', conf: 'app_conf' },
+                'assessment': { result: 'assess_result', conf: 'assess_conf' },
+                'interview': { result: 'interview_result', conf: 'interview_conf' },
+                'offer': { result: 'offer_result', conf: 'offer_conf' }
+            },
+            'masters': {
+                'application': { result: 'app_result', conf: 'app_conf' },
+                'assessment': { result: 'assess_result', conf: 'assess_conf' },
+                'interview': { result: 'interview_result', conf: 'interview_conf' },
+                'decision': { result: 'decision_result', conf: 'decision_conf' }
+            },
+            'scholar': {
+                'application': { result: 'app_result', conf: 'app_conf' },
+                'assessment': { result: 'assess_result', conf: 'assess_conf' },
+                'interview': { result: 'interview_result', conf: 'interview_conf' },
+                'decision': { result: 'decision_result', conf: 'decision_conf' }
+            },
+            'clubs': {
+                'application': { result: 'app_result', conf: 'app_conf' },
+                'interview': { result: 'interview_result', conf: 'interview_conf' },
+                'decision': { result: 'decision_result', conf: 'decision_conf' }
+            }
+        };
+        return fields[tabName][columnName] || {};
+    }
+
+    function getTooltip(columnName, status, isComplete) {
+        const stageName = columnName.charAt(0).toUpperCase() + columnName.slice(1);
+        let tooltip = `${stageName}: ${status.replace('_', ' ').toUpperCase()}`;
+        tooltip += isComplete ? ' (Completed)' : ' (In Progress)';
+        return tooltip;
+    }
+
+    function formatForHome(app, type) {
+    let status = 'no_update';
+    let lastUpdated = '';
+    
+    // Check status fields in reverse order (most recent first)
+    const statusFields = type === 'Internship' 
+        ? ['offer_result', 'interview_result', 'assess_result', 'app_result']
+        : ['decision_result', 'interview_result', 'assess_result', 'app_result'];
+    
+    for (const field of statusFields) {
+        if (app[field] && app[field] !== 'no_update') {
+            status = app[field];
+            lastUpdated = field.replace('_result', '').replace('_', ' ') + ' stage';
+            break;
+        }
+    }
+    
+    return {
+        name: app.key || 'Unknown',
+        type: type,
+        lastUpdated: lastUpdated || 'Not started',
+        stage: status
+    };
+}
 
     // Search functionality
     document.getElementById('searchInput').addEventListener('input', function(e) {
