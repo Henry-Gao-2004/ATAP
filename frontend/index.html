@@ -196,7 +196,7 @@
             background-color: #ffa500;
             color: #000;
         }
-        .status-in-progress {
+        .status-in_progress {
             background-color: #90EE90; 
             color: #000;
         }
@@ -208,7 +208,7 @@
             background-color: #f8f8f8; 
             color: #555;
         }
-        .status-not-started {
+        .status-not_started {
             background-color: #ffffff; 
             color: #999;
             font-style: italic;
@@ -524,65 +524,65 @@
 
     // if i have more time look into this 
     function populateGenericTable(tabName, applications) {
-    const table = document.getElementById(`${tabName}-table`);
-    const tbody = table.querySelector('tbody');
-    const headers = table.querySelectorAll('thead th');
+        const table = document.getElementById(`${tabName}-table`);
+        const tbody = table.querySelector('tbody');
+        const headers = table.querySelectorAll('thead th');
 
-    tbody.innerHTML = '';
+        tbody.innerHTML = '';
 
-    if (applications.length === 0) {
-        const row = document.createElement('tr');
-        row.className = 'empty-message';
-        row.innerHTML = `<td colspan="${headers.length}">No applications detected yet</td>`;
-        tbody.appendChild(row);
-        return;
-    }
+        if (applications.length === 0) {
+            const row = document.createElement('tr');
+            row.className = 'empty-message';
+            row.innerHTML = `<td colspan="${headers.length}">No applications detected yet</td>`;
+            tbody.appendChild(row);
+            return;
+        }
 
-    applications.forEach(app => {
-        const row = document.createElement('tr');
+        applications.forEach(app => {
+            const row = document.createElement('tr');
         
-        headers.forEach(header => {
-            const cell = document.createElement('td');
-            const columnName = header.textContent.toLowerCase();
+            headers.forEach(header => {
+                const cell = document.createElement('td');
+                const columnName = header.textContent.toLowerCase();
             
-            if (columnName === 'company') {
-                    cell.textContent = app.key || 'Unknown';
-                } else {
-                    const { resultField, confField, updateField } = getFieldNames(tabName, columnName);
-                    // Get status with better fallback logic
-                    let status = app[resultField] ||
-                    (app[confField] && app[confField] !== 'no_update' ? 'in_progress' : 'no_update');
+                if (columnName === 'company') {
+                        cell.textContent = app.key || 'Unknown';
+                    } else {
+                        const { resultField, confField, updateField } = getFieldNames(tabName, columnName);
+                        // Get status with better fallback logic
+                        let status = app[resultField] ||
+                        (app[confField] && app[confField] !== 'no_update' ? 'in_progress' : 'no_update');
                     
-                    // Set cell class and content
-                    cell.className = `status-${status.toLowerCase().replace(' ', '_')}`;
-                    cell.textContent = status === 'no_update' ? 'NO UPDATE' : status.toUpperCase();
-                    // Add completion indicator
-                    const dot = document.createElement('span');
-                    const isComplete = app[confField] === 'complete';
-                    dot.className = isComplete ? 'status-dot status-dot-complete'
-                            : 'status-dot status-dot-incomplete';
-                            cell.insertBefore(dot, cell.firstChild);
+                        // Set cell class and content
+                        cell.className = `status-${status.toLowerCase().replace(' ', '_')}`; // being replaced by _ to create valid CSS class names
+                        cell.textContent = status === 'no_update' ? 'NO UPDATE' : status.toUpperCase();
+                        // Add completion indicator
+                        const dot = document.createElement('span');
+                        const isComplete = app[confField] === 'complete';
+                        dot.className = isComplete ? 'status-dot status-dot-complete'
+                                : 'status-dot status-dot-incomplete';
+                                cell.insertBefore(dot, cell.firstChild);
                 
-                // Enhanced tooltip with update time
-                let tooltip = `${columnName.toUpperCase()}: ${status.toUpperCase()}`;
-                if (lastUpdated) {
-                    tooltip += `\nLast updated: ${lastUpdated}`;
+                    // Enhanced tooltip with update time
+                    let tooltip = `${columnName.toUpperCase()}: ${status.toUpperCase()}`;
+                    if (lastUpdated) {
+                        tooltip += `\nLast updated: ${lastUpdated}`;
+                    }
+                    cell.setAttribute('data-tooltip', tooltip);
                 }
-                cell.setAttribute('data-tooltip', tooltip);
-            }
             
-            row.appendChild(cell);
-        });
+                row.appendChild(cell);
+             });
         
-        tbody.appendChild(row);
-    });
-}
+            tbody.appendChild(row);
+        });
+    }
 
     // Helper functions
     function getFieldNames(tabName, columnName) {
     const fields = {
         'internships': {
-            'application': { conf: 'app_conf', result: 'app_result', update: 'app_updated'},
+            'application': {conf: 'app_conf', result: 'app_result', update: 'app_updated'},
             'assessment': { conf: 'assess_conf', result: 'assess_result', update: 'assess_updated'},
             'interview': {conf: 'interview_conf', result: 'interview_result', update: 'interview_updated'},
             'offer': { result: 'offer_result', conf: 'offer_conf', update: 'offer_updated'}
