@@ -2,8 +2,10 @@ import ndjson
 from typing import Tuple
 import requests
 
+base_url = "http://localhost:11434"
+
 def is_application(email: str) -> Tuple[bool, str]:
-    url = "http://192.168.56.1:11434/api/chat"
+    url = base_url+"/api/chat"
     payload = {
         "model": "gemma3:latest",
         "messages": [
@@ -26,7 +28,7 @@ def is_application(email: str) -> Tuple[bool, str]:
         return False, response.status_code
     
 def classify_email(email: str) -> Tuple[bool, str]:
-    url = "http://192.168.56.1:11434/api/chat"
+    url = base_url+"/api/chat"
     payload = {
         "model": "gemma3:latest",
         "messages": [
@@ -48,7 +50,7 @@ def classify_email(email: str) -> Tuple[bool, str]:
         return False, response.status_code
 
 def extract_info(email: str) -> Tuple[bool, list[str]]:
-    url = "http://192.168.56.1:11434/api/chat"
+    url = base_url+"/api/chat"
     payload = {
         "model": "gemma3:latest",
         "messages": [
@@ -71,7 +73,7 @@ def extract_info(email: str) -> Tuple[bool, list[str]]:
         return False, response.status_code
     
 def classify_category(email: str) -> Tuple[bool, list[str]]:
-    url = "http://192.168.56.1:11434/api/chat"
+    url = base_url+"/api/chat"
     payload = {
         "model": "gemma3:latest",
         "messages": [
@@ -94,7 +96,7 @@ def classify_category(email: str) -> Tuple[bool, list[str]]:
         return False, response.status_code
     
 def email_action(email: str) -> Tuple[bool, list[str]]:
-    url = "http://192.168.56.1:11434/api/chat"
+    url = base_url+"/api/chat"
     payload = {
         "model": "gemma3:latest",
         "messages": [

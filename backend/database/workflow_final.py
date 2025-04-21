@@ -1,6 +1,6 @@
-from backend.nlp_utils import *
-from sql_database import *
-from flow import *
+from nlp_utils import *
+from database.sql_database import *
+from database.flow import *
 
 # Constants
 
@@ -98,6 +98,7 @@ rejection_dispatch = {
 
 # Constructing final workflow
 def final_workflow(email: str) -> None:
+    print("Starting final workflow...")
 
     # 1. Check if email is application-related
     is_app, content = is_application(email)

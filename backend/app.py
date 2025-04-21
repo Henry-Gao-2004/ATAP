@@ -1,5 +1,8 @@
 import base64
+import json
 from flask import Flask, request, jsonify
+
+from database.workflow_final import final_workflow
 
 app = Flask(__name__)
 
@@ -32,7 +35,7 @@ def api_endpoint():
             'date': date,
             'text': text
         }
-        print("Sender:"+sender+" Subject:"+subject+" Text:"+text)
+        final_workflow(json.dumps(response))
         return jsonify({"status": "success"})
     return jsonify({"status": "no data"})
     
