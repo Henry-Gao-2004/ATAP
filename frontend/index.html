@@ -546,27 +546,22 @@
             const columnName = header.textContent.toLowerCase();
             
             if (columnName === 'company') {
-                cell.textContent = app.key || 'Unknown';
-            } else {
-                const { resultField, confField, updateField } = getFieldNames(tabName, columnName);
-                
-                // Get status with better fallback logic
-                let status = app[resultField] || 
-                           (app[confField] && app[confField] !== 'no_update' ? 'in_progress' : 'no_update');
-                
-                // Get last updated time if available
-                const lastUpdated = app[updateField] || '';
-                
-                // Set cell class and content
-                cell.className = `status-${status.toLowerCase().replace(' ', '_')}`;
-                cell.textContent = status === 'no_update' ? 'NO UPDATE' : status.toUpperCase();
-                
-                // Add completion indicator
-                const dot = document.createElement('span');
-                const isComplete = app[confField] === 'complete';
-                dot.className = isComplete ? 'status-dot status-dot-complete' 
-                                        : 'status-dot status-dot-incomplete';
-                cell.insertBefore(dot, cell.firstChild);
+                    cell.textContent = app.key || 'Unknown';
+                } else {
+                    const { resultField, confField, updateField } = getFieldNames(tabName, columnName);
+                    // Get status with better fallback logic
+                    let status = app[resultField] ||
+                    (app[confField] && app[confField] !== 'no_update' ? 'in_progress' : 'no_update');
+                    
+                    // Set cell class and content
+                    cell.className = `status-${status.toLowerCase().replace(' ', '_')}`;
+                    cell.textContent = status === 'no_update' ? 'NO UPDATE' : status.toUpperCase();
+                    // Add completion indicator
+                    const dot = document.createElement('span');
+                    const isComplete = app[confField] === 'complete';
+                    dot.className = isComplete ? 'status-dot status-dot-complete'
+                            : 'status-dot status-dot-incomplete';
+                            cell.insertBefore(dot, cell.firstChild);
                 
                 // Enhanced tooltip with update time
                 let tooltip = `${columnName.toUpperCase()}: ${status.toUpperCase()}`;
@@ -585,31 +580,31 @@
 
     // Helper functions
     function getFieldNames(tabName, columnName) {
-        const fields = {
-            'internships': {
-                'application': { conf: 'app_conf', result: 'app_result', update: 'app_updated'},
-                'assessment': { conf: 'assess_conf', result: 'assess_result', update: 'assess_updated'},
-                'interview': {conf: 'interview_conf', result: 'interview_result', update: 'interview_updated'},
-                'offer': { result: 'offer_result', conf: 'offer_conf', update: 'offer_updated'}
-            },
-            'masters': {
-                'application': {conf: 'app_conf', result: 'app_result', update: 'app_updated' },
-                'interview': {conf: 'interview_conf', result: 'interview_result', update: 'assess_updated' },
-                'decision': {conf: 'decision_conf', result: 'decision_result', update: 'offer_updated'}
-            },
-            'scholar': {
-                'application': { conf: 'app_conf', result: 'app_result', update: 'app_updated'},
-                'interview': {conf: 'interview_conf', result: 'interview_result', update: 'interview_updated'},
-                'offer': { result: 'offer_result', conf: 'offer_conf', update: 'offer_updated'}
-            },
-            'clubs': {
-                'application': { conf: 'app_conf', result: 'app_result', update: 'app_updated'},
-                'interview': {conf: 'interview_conf', result: 'interview_result', update: 'interview_updated'},
-                'offer': { result: 'offer_result', conf: 'offer_conf', update: 'offer_updated'}
-            }
-        };
-        return fields[tabName][columnName] || {};
-    }
+    const fields = {
+        'internships': {
+            'application': { conf: 'app_conf', result: 'app_result', update: 'app_updated'},
+            'assessment': { conf: 'assess_conf', result: 'assess_result', update: 'assess_updated'},
+            'interview': {conf: 'interview_conf', result: 'interview_result', update: 'interview_updated'},
+            'offer': { result: 'offer_result', conf: 'offer_conf', update: 'offer_updated'}
+        },
+        'masters': {
+            'application': {conf: 'app_conf', result: 'app_result', update: 'app_updated' },
+            'interview': {conf: 'interview_conf', result: 'interview_result', update: 'assess_updated' },
+            'decision': {conf: 'decision_conf', result: 'decision_result', update: 'offer_updated'}
+        },
+        'scholar': {
+            'application': { conf: 'app_conf', result: 'app_result', update: 'app_updated'},
+            'interview': {conf: 'interview_conf', result: 'interview_result', update: 'interview_updated'},
+            'decision': { result: 'decision_result', conf: 'decision_conf', update: 'offer_updated'}
+        },
+        'clubs': {
+            'application': { conf: 'app_conf', result: 'app_result', update: 'app_updated'},
+            'interview': {conf: 'interview_conf', result: 'interview_result', update: 'interview_updated'},
+            'offer': { result: 'offer_result', conf: 'offer_conf', update: 'offer_updated'}
+        }
+    };
+    return fields[tabName][columnName] || {};
+}
 
     function getTooltip(columnName, status, isComplete) {
         const stageName = columnName.charAt(0).toUpperCase() + columnName.slice(1);
@@ -632,7 +627,7 @@
         for (const field of statusFields) {
             if (app[field] && app[field] !== 'no_update') {
                 stage = field.replace('_result', '').replace('_', ' ');
-                stage = stage.charAt(0).toUpperCase() + stage.slice(1); // Capitalize first letter
+                stage = stage.charAt(0).toUpperCase() + stage.slice(1); 
                 lastUpdated = app.last_updated || 'Unknown';
                 break;
             }
