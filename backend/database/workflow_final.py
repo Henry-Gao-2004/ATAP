@@ -1,6 +1,7 @@
 from nlp_utils import *
 from database.sql_database import *
 from database.flow import *
+import uuid
 
 # Constants
 
@@ -98,17 +99,20 @@ rejection_dispatch = {
 
 # Constructing final workflow
 def final_workflow(email: str) -> None:
-    print("Starting final workflow...")
+    task_uuid = uuid.uuid4()
+    print(datetime.now().strftime("%H:%M:%S"),task_uuid,"Starting ...")
 
     # 1. Check if email is application-related
+    print(datetime.now().strftime("%H:%M:%S"),task_uuid,"Checking if email is application-related...")
     is_app, content = is_application(email)
-    print("Is application-related:", is_app)
+    print(datetime.now().strftime("%H:%M:%S"),task_uuid,"Is application-related:", is_app)
     if not is_app:
         return
 
     #2. Classify email type
+    print(datetime.now().strftime("%H:%M:%S"),task_uuid,"Classifying email category...")
     success, category_list = classify_category(email)
-    print("Classified category:", category_list)
+    print(datetime.now().strftime("%H:%M:%S"),task_uuid,"Classified category:", category_list)
     if success:
         category = category_list.lower() # make sure using this right
         category_map = {
@@ -120,15 +124,16 @@ def final_workflow(email: str) -> None:
 
         app_type = category_map.get(category)
         if not app_type:
-            print("Unrecognized category:", category)
+            print(datetime.now().strftime("%H:%M:%S"),task_uuid,"Unrecognized category:", category)
             return # Fallback in case of unrecognized category
     else:
         return # Fallback in case of failure to classify
 
     #3. Creating Keys and Entries (if unique key)
 
+    print(datetime.now().strftime("%H:%M:%S"),task_uuid,"Extracting information from email...")
     success, info = extract_info(email)
-    print("Extracted info:", info)
+    print(datetime.now().strftime("%H:%M:%S"),task_uuid,"Extracted info:", info)
 
     if app_type == INTERNSHIP and success and len(info) >= 2:
         company = info[0].strip().replace(" ", "_")
@@ -157,8 +162,9 @@ def final_workflow(email: str) -> None:
             club_insert(key)
 
     #4. Determine action type from email
+    print(datetime.now().strftime("%H:%M:%S"),task_uuid,"Determining action type from email...")
     action_type = email_action(email)[1]
-    print("Action type:", action_type)
+    print(datetime.now().strftime("%H:%M:%S"),task_uuid,"Action type:", action_type)
 
     #5. Rejection handling
     if action_type == "rejection":
