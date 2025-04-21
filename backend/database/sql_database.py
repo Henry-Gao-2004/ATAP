@@ -3,7 +3,7 @@
 import sqlite3
 from datetime import datetime
 
-DB_PATH = "applications.db"
+DB_PATH = "C:\\User\\School\\2025_Spring\\CS329\ATAP\\backend\database\\applications.db"
 
 def create_schema(db_path: str = DB_PATH) -> None:
 
@@ -83,6 +83,7 @@ def create_schema(db_path: str = DB_PATH) -> None:
     conn.close()
 
 def persist_internships(apps: dict, db_path: str = DB_PATH) -> None:
+    create_schema(db_path)
     conn = sqlite3.connect(db_path)
     c = conn.cursor()
     for key, entry in apps.items():

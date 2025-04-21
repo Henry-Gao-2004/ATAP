@@ -5,6 +5,7 @@ import requests
 base_url = "http://localhost:11434"
 
 def is_application(email: str) -> Tuple[bool, str]:
+    print("Checking if email is application-related...")
     url = base_url+"/api/chat"
     payload = {
         "model": "gemma3:latest",
@@ -14,7 +15,6 @@ def is_application(email: str) -> Tuple[bool, str]:
                 "content": "Return 'True' if the following email is application related, and return 'False' otherwise: "+email
             }
         ]
-    
     }
     response = requests.post(url, json=payload)
     if response.status_code == 200:
@@ -28,6 +28,7 @@ def is_application(email: str) -> Tuple[bool, str]:
         return False, response.status_code
     
 def classify_email(email: str) -> Tuple[bool, str]:
+    print("Classifying email...")
     url = base_url+"/api/chat"
     payload = {
         "model": "gemma3:latest",
@@ -50,6 +51,7 @@ def classify_email(email: str) -> Tuple[bool, str]:
         return False, response.status_code
 
 def extract_info(email: str) -> Tuple[bool, list[str]]:
+    print("Extracting information from email...")
     url = base_url+"/api/chat"
     payload = {
         "model": "gemma3:latest",
@@ -73,6 +75,7 @@ def extract_info(email: str) -> Tuple[bool, list[str]]:
         return False, response.status_code
     
 def classify_category(email: str) -> Tuple[bool, list[str]]:
+    print("Classifying email category...")
     url = base_url+"/api/chat"
     payload = {
         "model": "gemma3:latest",
@@ -91,18 +94,19 @@ def classify_category(email: str) -> Tuple[bool, list[str]]:
         for item in result:
             if item['message']['role'] == 'assistant':
                 response_text = response_text+ item['message']['content']
-        return True, response_text.strip().split(",")
+        return True, response_text.strip()
     else:
         return False, response.status_code
     
-def email_action(email: str) -> Tuple[bool, list[str]]:
+def email_action(email: str) -> Tuple[bool, str]:
+    print("Determining action type from email...")
     url = base_url+"/api/chat"
     payload = {
         "model": "gemma3:latest",
         "messages": [
             {
                 "role": "user",
-                "content": "Return 'In Progress' if the email contains an invite to complete an assessment or a interview. Otherwise return 'Complete'. The email is: "+email
+                "content": "Categorize the email into one of the following categories: “rejection”, “assessment_invite”, “assessment_confirmation”, “interview_invite”, “interview_confirmation”, “decision_update”. Only return the category. The email is: "+email
             }
         ]
     
@@ -114,7 +118,7 @@ def email_action(email: str) -> Tuple[bool, list[str]]:
         for item in result:
             if item['message']['role'] == 'assistant':
                 response_text = response_text+ item['message']['content']
-        return True, response_text.strip().split(",")
+        return True, response_text.strip()
     else:
         return False, response.status_code
     
