@@ -43,10 +43,12 @@ OFFER_RESULT = False  # if successful interview = offer
 
 # think about what to add to each individual
 
+from datetime import datetime
+
 # Tags
 
 INTERNSHIP = 'internship'
-MASTERS = 'masters'
+POST_GRAD = 'post_grad'
 SCHOLARSHIP = 'scholarship'
 CLUB = 'club'
 
@@ -61,62 +63,34 @@ NO_UPDATE = 'no_update' # white
 
 # Email Category Classifier
 
-# just sample method (fix later!)
-def app_category_classifier(email: str) -> str | None:
-    is_app, _ = is_application(email)
-    if not is_app:
-        return None
-
-    text = email.lower()
-
-    # simple keyword heuristics
-    if 'internship' in text or ' intern ' in text:
-        return INTERNSHIP
-    if 'master' in text or 'm.s.' in text or 'msc ' in text:
-        return MASTERS
-    if 'scholarship' in text or 'fellowship' in text:
-        return SCHOLARSHIP
-    if 'club' in text:
-        return CLUB
-
-    # fallback if none match
-    return INTERNSHIP
+# Henry already made
 
 # Internships (run if email is detected to be an internship)
 
-internship_applications = dict()
+# API for use of methods
 
-def internship_insert(email: str) -> None:
-
-    is_app, content = is_application(email) # will probably get rid of this in work flow
-
-    if not is_app:
-        return
-
-    success, info = extract_info(email) # make sure this is how extract_info works
-    if success and len(info) >= 2:
-        company, position = info[0].strip(), info[1].strip()
-    else:
-        company, position = "Unknown", "Unknown" # just a fallback
-
-    key = f"{company}_{position}"
-
+def internship_insert(key: str) -> None:
+    now = datetime.now().isoformat()
     entry = {
         "application": {
             "confirmation": COMPLETE,
-            "result": IN_PROGRESS
+            "result": IN_PROGRESS,
+            "updated": now
         },
         "assessment": {
             "confirmation": INCOMPLETE,
-            "result": NO_UPDATE
+            "result": NO_UPDATE,
+            "updated": now
         },
         "interview": {
             "confirmation": INCOMPLETE,
-            "result": NO_UPDATE
+            "result": NO_UPDATE,
+            "updated": now
         },
         "offer": {
             "confirmation": INCOMPLETE,
-            "result": NO_UPDATE
+            "result": NO_UPDATE,
+            "updated": now
         },
     }
 
@@ -124,39 +98,28 @@ def internship_insert(email: str) -> None:
 
 # Master's Programs
 
-masters_applications = dict()
-
-def masters_insert(email: str) -> None:
-
-    is_app, content = is_application(email)
-
-    if not is_app:
-        return
-
-    success, info = extract_info(email) # make sure this is how extract_info works
-    if success and len(info) >= 2:
-        school, program = info[0].strip(), info[1].strip()
-    else:
-        school, program = "Unknown", "Unknown" # just a fallback
-
-    key = f"{school}_{program}"
-
+def masters_insert(key: str) -> None:
+    now = datetime.now().isoformat()
     entry = {
         "application": {
             "confirmation": COMPLETE,
-            "result": IN_PROGRESS
+            "result": IN_PROGRESS,
+            "updated": now
         },
         "assessment": {
             "confirmation": INCOMPLETE,
-            "result": NO_UPDATE
+            "result": NO_UPDATE,
+            "updated": now
         },
         "interview": {
             "confirmation": INCOMPLETE,
-            "result": NO_UPDATE
+            "result": NO_UPDATE,
+            "updated": now
         },
         "decision": {
             "confirmation": INCOMPLETE,
-            "result": NO_UPDATE
+            "result": NO_UPDATE,
+            "updated": now
         },
     }
 
@@ -164,39 +127,23 @@ def masters_insert(email: str) -> None:
 
 # Scholarships (keep in mind that definition of assessment varies with application type)
 
-scholar_applications = dict()
-
-def scholar_insert(email: str) -> None:
-
-    is_app, content = is_application(email)
-
-    if not is_app:
-        return
-
-    success, info = extract_info(email) # make sure this is how extract_info works
-    if success and len(info) >= 2:
-        sponsor, program = info[0].strip(), info[1].strip()
-    else:
-        sponsor, program = "Unknown", "Unknown" # just a fallback
-
-    key = f"{sponsor}_{program}"
-
+def scholar_insert(key: str) -> None:
+    now = datetime.now().isoformat()
     entry = {
-        "application/materials": {
+        "application": {
             "confirmation": COMPLETE,
-            "result": IN_PROGRESS
-        },
-        "assessment": {
-            "confirmation": INCOMPLETE,
-            "result": NO_UPDATE
+            "result": IN_PROGRESS,
+            "updated": now
         },
         "interview": {
             "confirmation": INCOMPLETE,
-            "result": NO_UPDATE
+            "result": NO_UPDATE,
+            "updated": now
         },
         "decision": {
             "confirmation": INCOMPLETE,
-            "result": NO_UPDATE
+            "result": NO_UPDATE,
+            "updated": now
         },
     }
 
@@ -205,39 +152,28 @@ def scholar_insert(email: str) -> None:
 # clubs would be weird (not usually a confirmation, but more like a rejection, would have to adjust workflow for clubs)
 # Clubs (keep in mind that definition of assessment varies with application type)
 
-club_applications = dict()
-
-def club_insert(email: str) -> None:
-
-    is_app, content = is_application(email)
-
-    if not is_app:
-        return
-
-    success, info = extract_info(email) # make sure this is how extract_info works
-    if success and len(info) >= 2:
-        club = info[0].strip()
-    else:
-        club = "Unknown" # just a fallback
-
-    key = f"{club}"
-
+def club_insert(key: str) -> None:
+    now = datetime.now().isoformat()
     entry = {
-        "application/materials": {
+        "application": {
             "confirmation": COMPLETE,
-            "result": IN_PROGRESS # will get updated when get either accepted/rejected to interview
+            "result": IN_PROGRESS, # will get updated when get either accepted/rejected to interview
+            "updated": now
         },
         "interview": {
             "confirmation": INCOMPLETE,
-            "result": NO_UPDATE
+            "result": NO_UPDATE,
+            "updated": now
         },
-        "decision": {
+        "offer": {
             "confirmation": INCOMPLETE,
-            "result": NO_UPDATE
+            "result": NO_UPDATE,
+            "updated": now
         },
     }
 
     club_applications[key] = entry
+
 
 
 
