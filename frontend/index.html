@@ -546,7 +546,12 @@
                 const columnName = header.textContent.toLowerCase();
             
             if (columnName === 'company') {
-                    cell.textContent = app.key || 'Unknown';
+                if (columnName === 'company') {
+                    // replace all underscores with spaces
+                    const prettyName = (app.key || 'Unknown').replace(/_/g, ' ');
+                    cell.textContent = prettyName;
+                }
+
                 } else {
                     const fieldNames = getFieldNames(tabName, columnName);
                     resultField = fieldNames.result;
