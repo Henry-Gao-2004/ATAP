@@ -1,4 +1,4 @@
-from type_dicts import *
+from database.type_dicts import *
 
 COMPLETE = 'complete'
 INCOMPLETE = 'incomplete'

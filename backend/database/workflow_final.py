@@ -1,6 +1,6 @@
-from backend.nlp_utils import *
-from sql_database import *
-from flow import *
+from nlp_utils import *
+from database.sql_database import *
+from database.flow import *
 
 # Constants
 
@@ -61,7 +61,7 @@ flow_dispatch = {
     (INTERNSHIP, "assessment_confirmation"): assessment_confirmation_int,
     (INTERNSHIP, "interview_invite"): interview_invite_update_int,
     (INTERNSHIP, "interview_confirmation"): interview_confirmation_int,
-    (INTERNSHIP, "offer_update"): offer_update_int,
+    (INTERNSHIP, "decision_update"): offer_update_int,
 
     (POST_GRAD, "assessment_invite"): assessment_invite_update_post,
     (POST_GRAD, "assessment_confirmation"): assessment_confirmation_post,
@@ -98,16 +98,19 @@ rejection_dispatch = {
 
 # Constructing final workflow
 def final_workflow(email: str) -> None:
+    print("Starting final workflow...")
 
     # 1. Check if email is application-related
     is_app, content = is_application(email)
+    print("Is application-related:", is_app)
     if not is_app:
         return
 
     #2. Classify email type
     success, category_list = classify_category(email)
+    print("Classified category:", category_list)
     if success:
-        category = category_list[0].lower() # make sure using this right
+        category = category_list.lower() # make sure using this right
         category_map = {
             "internship": INTERNSHIP,
             "club": CLUB,
@@ -117,6 +120,7 @@ def final_workflow(email: str) -> None:
 
         app_type = category_map.get(category)
         if not app_type:
+            print("Unrecognized category:", category)
             return # Fallback in case of unrecognized category
     else:
         return # Fallback in case of failure to classify
@@ -124,6 +128,7 @@ def final_workflow(email: str) -> None:
     #3. Creating Keys and Entries (if unique key)
 
     success, info = extract_info(email)
+    print("Extracted info:", info)
 
     if app_type == INTERNSHIP and success and len(info) >= 2:
         company = info[0].strip().replace(" ", "_")
@@ -152,7 +157,8 @@ def final_workflow(email: str) -> None:
             club_insert(key)
 
     #4. Determine action type from email
-    action_type = email_action(email)
+    action_type = email_action(email)[1]
+    print("Action type:", action_type)
 
     #5. Rejection handling
     if action_type == "rejection":
