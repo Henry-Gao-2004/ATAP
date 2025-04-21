@@ -6,6 +6,8 @@ import logging
 from flask import Flask, g, jsonify, request
 from flask_cors import CORS
 
+from sql_database import create_schema
+
 # --- Configuration ---
 class Config:
     DB_PATH = os.getenv("APPLICATIONS_DB_PATH", "applications.db")
@@ -23,6 +25,7 @@ logger = logging.getLogger(__name__)
 
 # --- Database Helpers ---
 def get_db():
+    create_schema()
     """Get a SQLite connection for the current request context."""
     if "db" not in g:
         conn = sqlite3.connect(app.config["DB_PATH"])
