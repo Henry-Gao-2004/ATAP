@@ -11,18 +11,27 @@ def api_endpoint():
     if ('UNREAD' in data['labelIds']):
         sender = ''
         subject = ''
+        date = ''
         text = ''
         for token in data['payload']['headers']:
             if token['name'] == 'From':
                 sender = token['value']
             elif token['name'] == 'Subject':
                 subject = token['value']
+            elif token['name'] == 'Date':
+                date = token['value']
         for part in data['payload']['parts']:
             if part.get("mimeType") == "text/plain":
                 data = part.get("body", {}).get("data", "")
                 decoded_bytes = base64.urlsafe_b64decode(data)
                 decoded_text = decoded_bytes.decode("utf-8")
                 text = decoded_text
+        response = {
+            'sender': sender,
+            'subject': subject,
+            'date': date,
+            'text': text
+        }
         print("Sender:"+sender+" Subject:"+subject+" Text:"+text)
         return jsonify({"status": "success"})
     return jsonify({"status": "no data"})
