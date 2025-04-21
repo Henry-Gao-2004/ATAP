@@ -14,6 +14,7 @@
     <!-- CSS -->
 
     <style>
+<style>
         body {
             font-family: Arial, sans-serif;
             margin: 0;
@@ -42,17 +43,17 @@
         .logo {
             top: 0;
             left: 0;
-            padding: 5px 5px; 
+            padding: 5px 5px;
         }
         .logo img {
-            height: 60px; 
-            width: auto; 
+            height: 60px;
+            width: auto;
         }
         h1 {
             color: #333;
             margin-top: 0;
         }
-        /* CSS for search */ 
+        /* CSS for search */
         .search-container {
             display: flex;
             align-items: center;
@@ -78,33 +79,33 @@
             display: flex;
             margin-bottom: 20px;
             border-bottom: 1px solid #ddd;
-            width: 100%; 
+            width: 100%;
         }
         .tab {
             padding: 12px 0;
             cursor: pointer;
-            background-color: #f8f8f8; 
+            background-color: #f8f8f8;
             border: 1px solid #ddd;
             border-bottom: none;
-            margin-right: 0; 
+            margin-right: 0;
             border-radius: 5px 5px 0 0;
-            flex: 1; 
+            flex: 1;
             text-align: center;
-            transition: background-color 0.2s ease; 
-            font-weight: 500; 
-            color: #555; 
+            transition: background-color 0.2s ease;
+            font-weight: 500;
+            color: #555;
         }
         .tab:hover {
             background-color: #e0e0e0;
-            color: #333; 
+            color: #333;
         }
         .tab.active {
             background-color: white;
             border-bottom: 1px solid white;
             margin-bottom: -1px;
             font-weight: bold;
-            color: #333; 
-            border-top: 2px solid #4a90e2; 
+            color: #333;
+            border-top: 2px solid #4a90e2;
         }
         .tab-content {
             display: none;
@@ -182,7 +183,7 @@
             padding: 20px;
             text-align: center;
         }
-        /* if no results using search bar */ 
+        /* if no results using search bar */
         .no-results {
             color: #999;
             font-style: italic;
@@ -197,19 +198,58 @@
             color: #000;
         }
         .status-in_progress {
-            background-color: #ffa500;   
+            background-color: #ffa500;
             color: #000;
         }
         .status-rejected {
-            background-color: #ff6b6b; 
+            background-color: #ff6b6b;
             color: #000;
         }
         .status-pending {
-            background-color: #f8f8f8; 
+            background-color: #f8f8f8;
             color: #555;
         }
         .status-not_started {
-            background-color: #ffffff; 
+            background-color: #ffffff;
+            color: #999;
+            font-style: italic;
+        }
+
+        /* New class for completed stages */
+        .status-completed {
+            background-color: #e0f7de !important; /* Light green */
+            color: #388e3c !important;
+            font-weight: normal; /* Adjust as needed */
+        }
+
+        /* Override completed color if the current status has a specific color */
+        .status-application.status-completed,
+        .status-assessment.status-completed,
+        .status-interview.status-completed,
+        .status-offer.status-completed,
+        .status-decision.status-completed {
+            /* Keep the specific status color if it's also marked as completed */
+        }
+
+        /* Ensure current status colors take precedence */
+        .status-complete {
+            background-color: #90EE90;
+            color: #000;
+        }
+        .status-in_progress {
+            background-color: #ffa500;
+            color: #000;
+        }
+        .status-rejected {
+            background-color: #ff6b6b;
+            color: #000;
+        }
+        .status-pending {
+            background-color: #f8f8f8;
+            color: #555;
+        }
+        .status-not_started {
+            background-color: #ffffff;
             color: #999;
             font-style: italic;
         }
@@ -229,6 +269,7 @@
             background-color: transparent;
             border: 2px solid currentColor;
         }
+    </style>
 
 
         
@@ -523,7 +564,6 @@
         });
     }
 
-    // if i have more time look into this 
     function populateGenericTable(tabName, applications) {
         const table = document.getElementById(`${tabName}-table`);
         const tbody = table.querySelector('tbody');
@@ -541,47 +581,36 @@
 
         applications.forEach(app => {
             const row = document.createElement('tr');
-        
+
             headers.forEach(header => {
                 const cell = document.createElement('td');
                 const columnName = header.textContent.toLowerCase();
-            
-            if (columnName === 'company') {
+
                 if (columnName === 'company') {
-                    // replace all underscores with spaces
-                    const prettyName = (app.key || 'Unknown').replace(/_/g, ' ');
-                    cell.textContent = prettyName;
+                    cell.textContent = app.key || 'Unknown';
+                } else {
+                    const { resultField, confField } = getFieldNames(tabName, columnName);
+                    const status = app[resultField] || 'no_update';
+                    const isComplete = app[confField] === 'complete';
+
+                    // Apply status class for the current stage
+                    cell.classList.add(`status-${status.toLowerCase().replace(' ', '_')}`);
+
+                    // Apply "completed" class if the stage is complete
+                    if (isComplete) {
+                        cell.classList.add('status-complete'); // You'll need to define CSS for this
+                    }
+
+                    cell.textContent = status === 'no_update' ? 'NO UPDATE' : status.toUpperCase();
+
+                    const dot = document.createElement('span');
+                    dot.className = isComplete ? 'status-dot status-dot-complete' : 'status-dot status-dot-incomplete';
+                    cell.insertBefore(dot, cell.firstChild);
                 }
 
-                } else {
-                    const fieldNames = getFieldNames(tabName, columnName);
-                    resultField = fieldNames.result;
-                    confField = fieldNames.conf;
-                    updateField = fieldNames.update;
-                    console.log(resultField, confField, updateField);
-                    // Get status with better fallback logic
-                    let status = app[resultField] ||
-                    (app[confField] && app[confField] !== 'no_update' ? 'in_progress' : 'no_update');
-                    
-                        // Set cell class and content
-                        cell.className = `status-${status.toLowerCase().replace(' ', '_')}`; // being replaced by _ to create valid CSS class names
-                        cell.textContent = status === 'no_update' ? 'NO UPDATE' : status.toUpperCase();
-                        // Add completion indicator
-                        const dot = document.createElement('span');
-                        const isComplete = app[confField] === 'complete';
-                        dot.className = isComplete ? 'status-dot status-dot-complete'
-                                : 'status-dot status-dot-incomplete';
-                                cell.insertBefore(dot, cell.firstChild);
-                
-                // Enhanced tooltip with update time
-                let tooltip = `${columnName.toUpperCase()}: ${status.toUpperCase()}`;
-                
-                cell.setAttribute('data-tooltip', tooltip);
-            }
-            
                 row.appendChild(cell);
-             });
-        
+            });
+
             tbody.appendChild(row);
         });
     }
