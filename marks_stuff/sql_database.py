@@ -189,6 +189,3 @@ def persist_clubs(apps: dict, db_path: str = DB_PATH) -> None:
         ))
     conn.commit()
     conn.close()
-
-
-# database for each user, user_id

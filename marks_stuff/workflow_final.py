@@ -1,31 +1,34 @@
+from backend.nlp_utils import *
+from sql_database import *
+from flow import *
+
 # Constants
+
+## Application Types
 INTERNSHIP = 'internship'
 POST_GRAD = 'post_grad'
 SCHOLARSHIP = 'scholarship'
 CLUB = 'club'
 
+## Confirmation
 COMPLETE = 'complete'
 INCOMPLETE = 'incomplete'
 
+## Result
 SUCCESS = 'success'
 REJECT = 'reject'
 IN_PROGRESS = 'in_progress'
 NO_UPDATE = 'no_update'
 
+## Stage
 APPLICATION = 'application'
 ASSESSMENT = 'assessment'
 INTERVIEW = 'interview'
 OFFER = 'offer'
 DECISION = 'decision'
 
-# Creating global dictionaries (make sure works with methods from type_dicts)
-internship_applications = dict()
-masters_applications = dict()  # fix to post_grad later
-scholar_applications = dict()
-club_applications = dict()
-
 # Defining method to obtain last completed stage (for rejection purposes)
-# Stage-aware rejection check
+## Stage-aware rejection check
 def get_latest_stage(app_type: str, key: str) -> str:
     app_dict = {
         INTERNSHIP: internship_applications,
@@ -52,7 +55,7 @@ def get_latest_stage(app_type: str, key: str) -> str:
     return APPLICATION # Fallback if nothing is complete
 
 # Flow Dispatch Map (without rejections)
-# No need to be stage-aware because email content will be enough to tell what stage application is at
+## No need to be stage-aware because email content will be enough to tell what stage application is at
 flow_dispatch = {
     (INTERNSHIP, "assessment_invite"): assessment_invite_update_int,
     (INTERNSHIP, "assessment_confirmation"): assessment_confirmation_int,
@@ -76,7 +79,7 @@ flow_dispatch = {
 }
 
 # Rejection Dispatch Map (stage-aware)
-# Need rejections to be stage-aware because usually just plain rejection
+## Need rejections to be stage-aware because usually just plain rejection
 rejection_dispatch = {
     (APPLICATION, INTERNSHIP): rejection_update_application_int,
     (ASSESSMENT, INTERNSHIP): rejection_update_assessment_int,
@@ -93,6 +96,7 @@ rejection_dispatch = {
     (INTERVIEW, CLUB): rejection_update_interview_club,
 }
 
+# Constructing final workflow
 def final_workflow(email: str) -> None:
 
     # 1. Check if email is application-related
@@ -171,4 +175,19 @@ def final_workflow(email: str) -> None:
     elif app_type == CLUB:
         persist_clubs({key: club_applications[key]})
 
-# figuring out time thing (figure out flow and how to not update if already updated)
+# everything is flexible besides for getting initial email (non-negotiable)
+
+# in the future change from grouped updates to precise updates
+# for redundancy avoidance, do a method (rn very explicit)
+
+# delete after 12 months (or somehow make applications unique - change key names?)
+
+# calendar
+# progress
+
+# database for each user, user_id (when multiple users)
+
+# add fallback checks later
+
+# separate into more concrete .py files
+
