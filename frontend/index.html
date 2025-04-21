@@ -545,6 +545,7 @@
                 const cell = document.createElement('td');
                 const columnName = header.textContent.toLowerCase();
             
+<<<<<<< HEAD
                 if (columnName === 'company') {
                         cell.textContent = app.key || 'Unknown';
                     } else {
@@ -552,6 +553,19 @@
                         // Get status with better fallback logic
                         let status = app[resultField] ||
                         (app[confField] && app[confField] !== 'no_update' ? 'in_progress' : 'no_update');
+=======
+            if (columnName === 'company') {
+                    cell.textContent = app.key || 'Unknown';
+                } else {
+                    const fieldNames = getFieldNames(tabName, columnName);
+                    resultField = fieldNames.result;
+                    confField = fieldNames.conf;
+                    updateField = fieldNames.update;
+                    console.log(resultField, confField, updateField);
+                    // Get status with better fallback logic
+                    let status = app[resultField] ||
+                    (app[confField] && app[confField] !== 'no_update' ? 'in_progress' : 'no_update');
+>>>>>>> 21f45370624bcafd91a78826715f59bdd1482247
                     
                         // Set cell class and content
                         cell.className = `status-${status.toLowerCase().replace(' ', '_')}`; // being replaced by _ to create valid CSS class names
@@ -563,6 +577,7 @@
                                 : 'status-dot status-dot-incomplete';
                                 cell.insertBefore(dot, cell.firstChild);
                 
+<<<<<<< HEAD
                     // Enhanced tooltip with update time
                     let tooltip = `${columnName.toUpperCase()}: ${status.toUpperCase()}`;
                     if (lastUpdated) {
@@ -570,6 +585,13 @@
                     }
                     cell.setAttribute('data-tooltip', tooltip);
                 }
+=======
+                // Enhanced tooltip with update time
+                let tooltip = `${columnName.toUpperCase()}: ${status.toUpperCase()}`;
+                
+                cell.setAttribute('data-tooltip', tooltip);
+            }
+>>>>>>> 21f45370624bcafd91a78826715f59bdd1482247
             
                 row.appendChild(cell);
              });
