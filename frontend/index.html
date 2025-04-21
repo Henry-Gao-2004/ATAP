@@ -593,20 +593,19 @@
                 'offer': { result: 'offer_result', conf: 'offer_conf', update: 'offer_updated'}
             },
             'masters': {
-                'application': { result: 'app_result', conf: 'app_conf' },
-                'interview': { result: 'interview_result', conf: 'interview_conf' },
-                'decision': { result: 'decision_result', conf: 'decision_conf' }
+                'application': {conf: 'app_conf', result: 'app_result', update: 'app_updated' },
+                'interview': {conf: 'interview_conf', result: 'interview_result', update: 'assess_updated' },
+                'decision': {conf: 'decision_conf', result: 'decision_result', update: 'offer_updated'}
             },
             'scholar': {
-                'application': { result: 'app_result', conf: 'app_conf' },
-                'assessment': { result: 'assess_result', conf: 'assess_conf' },
-                'interview': { result: 'interview_result', conf: 'interview_conf' },
-                'decision': { result: 'decision_result', conf: 'decision_conf' }
+                'application': { conf: 'app_conf', result: 'app_result', update: 'app_updated'},
+                'interview': {conf: 'interview_conf', result: 'interview_result', update: 'interview_updated'},
+                'offer': { result: 'offer_result', conf: 'offer_conf', update: 'offer_updated'}
             },
             'clubs': {
-                'application': { result: 'app_result', conf: 'app_conf' },
-                'interview': { result: 'interview_result', conf: 'interview_conf' },
-                'decision': { result: 'decision_result', conf: 'decision_conf' }
+                'application': { conf: 'app_conf', result: 'app_result', update: 'app_updated'},
+                'interview': {conf: 'interview_conf', result: 'interview_result', update: 'interview_updated'},
+                'offer': { result: 'offer_result', conf: 'offer_conf', update: 'offer_updated'}
             }
         };
         return fields[tabName][columnName] || {};
