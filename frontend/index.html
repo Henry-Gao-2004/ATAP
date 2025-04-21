@@ -495,7 +495,8 @@
             
             // Application Name
             const nameCell = document.createElement('td');
-            nameCell.textContent = app.name;
+            const prettyName = (app.name || 'Unknown').replace(/_/g, ' ');
+            nameCell.textContent = prettyName;
             row.appendChild(nameCell);
             
             // Type
