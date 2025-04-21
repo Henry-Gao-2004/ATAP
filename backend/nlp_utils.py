@@ -35,7 +35,6 @@ def classify_email(email: str) -> Tuple[bool, str]:
                 "content": "Categorize the email into one of the categories: 'confirmation', 'update' or 'other'. Only return the category: "+email
             }
         ]
-    
     }
     response = requests.post(url, json=payload)
     if response.status_code == 200:
@@ -71,7 +70,7 @@ def extract_info(email: str) -> Tuple[bool, list[str]]:
     else:
         return False, response.status_code
     
-def classify_email(email: str) -> Tuple[bool, list[str]]:
+def classify_category(email: str) -> Tuple[bool, list[str]]:
     url = "http://192.168.56.1:11434/api/chat"
     payload = {
         "model": "gemma3:latest",
@@ -94,5 +93,26 @@ def classify_email(email: str) -> Tuple[bool, list[str]]:
     else:
         return False, response.status_code
     
-
+def email_action(email: str) -> Tuple[bool, list[str]]:
+    url = "http://192.168.56.1:11434/api/chat"
+    payload = {
+        "model": "gemma3:latest",
+        "messages": [
+            {
+                "role": "user",
+                "content": "Return 'In Progress' if the email contains an invite to complete an assessment or a interview. Otherwise return 'Complete'. The email is: "+email
+            }
+        ]
+    
+    }
+    response = requests.post(url, json=payload)
+    if response.status_code == 200:
+        result = ndjson.loads(response._content)
+        response_text = ""
+        for item in result:
+            if item['message']['role'] == 'assistant':
+                response_text = response_text+ item['message']['content']
+        return True, response_text.strip().split(",")
+    else:
+        return False, response.status_code
     
