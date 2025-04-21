@@ -548,7 +548,11 @@
             if (columnName === 'company') {
                     cell.textContent = app.key || 'Unknown';
                 } else {
-                    const { resultField, confField, updateField } = getFieldNames(tabName, columnName);
+                    const fieldNames = getFieldNames(tabName, columnName);
+                    resultField = fieldNames.result;
+                    confField = fieldNames.conf;
+                    updateField = fieldNames.update;
+                    console.log(resultField, confField, updateField);
                     // Get status with better fallback logic
                     let status = app[resultField] ||
                     (app[confField] && app[confField] !== 'no_update' ? 'in_progress' : 'no_update');
@@ -565,9 +569,7 @@
                 
                 // Enhanced tooltip with update time
                 let tooltip = `${columnName.toUpperCase()}: ${status.toUpperCase()}`;
-                if (lastUpdated) {
-                    tooltip += `\nLast updated: ${lastUpdated}`;
-                }
+                
                 cell.setAttribute('data-tooltip', tooltip);
             }
             
