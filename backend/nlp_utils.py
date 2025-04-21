@@ -12,7 +12,10 @@ def is_application(email: str) -> Tuple[bool, str]:
         "messages": [
             {
                 "role": "user",
-                "content": "Return 'True' if the following email is application related, and return 'False' otherwise: "+email
+                "content": "Return 'True' if the following email is application related, and return 'False' otherwise: "+email,
+                "options": {
+                    "num_predict": 1,
+                }
             }
         ]
     }
@@ -35,7 +38,10 @@ def classify_email(email: str) -> Tuple[bool, str]:
         "messages": [
             {
                 "role": "user",
-                "content": "Categorize the email into one of the categories: 'confirmation', 'update' or 'other'. Only return the category: "+email
+                "content": "Categorize the email into one of the categories: 'confirmation', 'update' or 'other'. Only return the category: "+email,
+                "options": {
+                    "num_predict": 1,
+                }
             }
         ]
     }
@@ -82,7 +88,10 @@ def classify_category(email: str) -> Tuple[bool, list[str]]:
         "messages": [
             {
                 "role": "user",
-                "content": "Classify the email into one of the following categories: 'Internship', 'Club', 'Education', 'Scholarship', 'Other'. Return the category only. The email is: "+email
+                "content": "Classify the email into one of the following categories based on its primary content: 'Internship', 'Club', 'Education', 'Scholarship', or 'Other'. Respond with one word only, selecting the most appropriate category. The email is: "+email,
+                "options": {
+                    "num_predict": 1,
+                }
             }
         ]
     
@@ -106,7 +115,10 @@ def email_action(email: str) -> Tuple[bool, str]:
         "messages": [
             {
                 "role": "user",
-                "content": "Categorize the email into one of the following categories: “rejection”, “assessment_invite”, “assessment_confirmation”, “interview_invite”, “interview_confirmation”, “decision_update”. Only return the category. The email is: "+email
+                "content": "Categorize the email into one of the following categories: “rejection”, “assessment_invite”, “assessment_confirmation”, “interview_invite”, “interview_confirmation”, “decision_update”. Only return the category. The email is: "+email,
+                "options": {
+                    "num_predict": 1,
+                }
             }
         ]
     
