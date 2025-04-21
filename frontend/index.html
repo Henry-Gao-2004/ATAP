@@ -155,6 +155,10 @@
             font-size: 0.8em;
             font-weight: bold;
         }
+        .stage-application {
+            background-color: #e2f0fd;
+            color: #0a58ca;
+        }
         .stage-assessment {
             background-color: #fff3cd;
             color: #856404;
@@ -163,9 +167,14 @@
             background-color: #cce5ff;
             color: #004085;
         }
-        .stage-decision {
+        .stage-decision, .stage-offer {
             background-color: #d4edda;
             color: #155724;
+        }
+        .stage-not-started {
+            background-color: #f8f9fa;
+            color: #6c757d;
+            font-style: italic;
         }
         .empty-message {
             color: #999;
@@ -200,7 +209,7 @@
             color: #555;
         }
         .status-not-started {
-            background-color: #ffffff; /* White */
+            background-color: #ffffff; 
             color: #999;
             font-style: italic;
         }
@@ -357,6 +366,8 @@
         // Configure (connecting backend to frontend)
         const API_BASE_URL = 'http://localhost:8000'; // change 
 
+        (host="0.0.0.0", port=8000)
+
 
         function openTab(evt, tabName) {
             // Hide all tab contents
@@ -382,7 +393,7 @@
         // Load data for a specific tab
         function loadTabData(tabName) {
             showLoading(tabName);
-            // Map frontend tab names to API endpoints
+            // Map frontend tab names to API endpoints in backend 
             const endpointMap = {
                 'home': null, // Special case - combine data from all endpoints
                 'internships': 'internships',
@@ -595,29 +606,32 @@
     }
 
     function formatForHome(app, type) {
-    let status = 'no_update';
-    let lastUpdated = '';
+        let stage = 'Not started';
+        let lastUpdated = '';
     
-    // Check status fields in reverse order (most recent first)
-    const statusFields = type === 'Internship' 
+        // Check status fields in reverse order (most recent first) to find the current stage
+        const statusFields = type === 'Internship' 
         ? ['offer_result', 'interview_result', 'assess_result', 'app_result']
-        : ['decision_result', 'interview_result', 'assess_result', 'app_result'];
+        : type === 'Scholarship'
+        ? ['decision_result', 'interview_result', 'assess_result', 'app_result']
+        : ['decision_result', 'interview_result', 'app_result'];
     
-    for (const field of statusFields) {
-        if (app[field] && app[field] !== 'no_update') {
-            status = app[field];
-            lastUpdated = field.replace('_result', '').replace('_', ' ') + ' stage';
-            break;
+        for (const field of statusFields) {
+            if (app[field] && app[field] !== 'no_update') {
+                stage = field.replace('_result', '').replace('_', ' ');
+                stage = stage.charAt(0).toUpperCase() + stage.slice(1); // Capitalize first letter
+                lastUpdated = app.last_updated || 'Unknown';
+                break;
+            }
         }
-    }
     
-    return {
-        name: app.key || 'Unknown',
-        type: type,
-        lastUpdated: lastUpdated || 'Not started',
-        stage: status
-    };
-}
+        return {
+            name: app.key || 'Unknown',
+            type: type,
+            lastUpdated: lastUpdated || 'Not started',
+            stage: stage
+        };
+    }
 
     // Search functionality
     document.getElementById('searchInput').addEventListener('input', function(e) {
