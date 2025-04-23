@@ -523,7 +523,7 @@
         });
     }
 
-    // if i have more time look into this 
+    // function for the other tabs 
     function populateGenericTable(tabName, applications) {
         const table = document.getElementById(`${tabName}-table`);
         const tbody = table.querySelector('tbody');
@@ -541,47 +541,67 @@
 
         applications.forEach(app => {
             const row = document.createElement('tr');
-        
-            headers.forEach(header => {
-                const cell = document.createElement('td');
-                const columnName = header.textContent.toLowerCase();
+            const columnOrder = Array.from(headers).map(header => header.textContent.toLowerCase());
             
-            if (columnName === 'company') {
+            // Track completed stages
+            const completedStages = [];
+            
+            // First pass to determine completed stages
+            columnOrder.forEach(columnName => {
+                if (columnName !== 'company') {
+                    const fieldNames = getFieldNames(tabName, columnName);
+                    const confField = fieldNames.conf;
+                    if (app[confField] === 'complete') {
+                        completedStages.push(columnName);
+                    }
+                }
+            });
+
+            // Second pass to create cells
+            columnOrder.forEach(columnName => {
+                const cell = document.createElement('td');
+                
                 if (columnName === 'company') {
-                    // replace all underscores with spaces
                     const prettyName = (app.key || 'Unknown').replace(/_/g, ' ');
                     cell.textContent = prettyName;
-                }
-
                 } else {
                     const fieldNames = getFieldNames(tabName, columnName);
-                    resultField = fieldNames.result;
-                    confField = fieldNames.conf;
-                    updateField = fieldNames.update;
-                    console.log(resultField, confField, updateField);
+                    const resultField = fieldNames.result;
+                    const confField = fieldNames.conf;
+                    const updateField = fieldNames.update;
+                    
                     // Get status with better fallback logic
                     let status = app[resultField] ||
-                    (app[confField] && app[confField] !== 'no_update' ? 'in_progress' : 'no_update');
+                        (app[confField] && app[confField] !== 'no_update' ? 'in_progress' : 'no_update');
                     
-                        // Set cell class and content
-                        cell.className = `status-${status.toLowerCase().replace(' ', '_')}`; // being replaced by _ to create valid CSS class names
-                        cell.textContent = status === 'no_update' ? 'NO UPDATE' : status.toUpperCase();
-                        // Add completion indicator
-                        const dot = document.createElement('span');
-                        const isComplete = app[confField] === 'complete';
-                        dot.className = isComplete ? 'status-dot status-dot-complete'
-                                : 'status-dot status-dot-incomplete';
-                                cell.insertBefore(dot, cell.firstChild);
+                    // Set cell class and content
+                    const isComplete = app[confField] === 'complete';
+                    cell.className = `status-${status.toLowerCase().replace(' ', '_')}`;
+                    
+                    // If stage is complete, keep the completed color
+                    if (isComplete) {
+                        cell.className = 'status-complete';
+                    }
+                    
+                    cell.textContent = status === 'no_update' ? 'NO UPDATE' : status.toUpperCase();
+                    
+                    // Add completion indicator
+                    const dot = document.createElement('span');
+                    dot.className = isComplete ? 'status-dot status-dot-complete'
+                                            : 'status-dot status-dot-incomplete';
+                    cell.insertBefore(dot, cell.firstChild);
+                    
+                    // Enhanced tooltip with update time
+                    let tooltip = `${columnName.toUpperCase()}: ${status.toUpperCase()}`;
+                    if (app[updateField]) {
+                        tooltip += `\nUpdated: ${app[updateField]}`;
+                    }
+                    cell.setAttribute('data-tooltip', tooltip);
+                }
                 
-                // Enhanced tooltip with update time
-                let tooltip = `${columnName.toUpperCase()}: ${status.toUpperCase()}`;
-                
-                cell.setAttribute('data-tooltip', tooltip);
-            }
-            
                 row.appendChild(cell);
-             });
-        
+            });
+
             tbody.appendChild(row);
         });
     }
