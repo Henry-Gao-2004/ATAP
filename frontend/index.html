@@ -556,33 +556,42 @@
                     const updateField = fieldNames.update;
                     
                     // Get status with better fallback logic
-                    let status = app[resultField] ||
-                        (app[confField] && app[confField] !== 'no_update' ? 'in_progress' : 'no_update');
-                    
-                    // Set cell class and content
+                    let status = app[resultField] || 'no_update';
                     const isComplete = app[confField] === 'complete';
-                    const isRejected = status.toLowerCase() === 'rejected';
                     
-                    // Special case for rejected - always show red
-                    if (isRejected) {
+                    // First check for rejected status - this takes priority over everything
+                    if (status.toLowerCase() === 'rejected') {
                         cell.className = 'status-rejected';
+                        cell.textContent = 'REJECTED';
+                        
+                        // Add rejection indicator (optional)
+                        const xIcon = document.createElement('span');
+                        xIcon.innerHTML = '&times; ';
+                        xIcon.style.color = 'inherit';
+                        cell.insertBefore(xIcon, cell.firstChild);
                     } 
-                    // If stage is complete and not rejected, show green
+                    // Then handle completed stages
                     else if (isComplete) {
                         cell.className = 'status-complete';
-                    }
-                    // Otherwise use the regular status coloring
-                    else {
-                        cell.className = `status-${status.toLowerCase().replace(' ', '_')}`;
-                    }
-                    
-                    cell.textContent = status === 'no_update' ? 'NO UPDATE' : status.toUpperCase();
-                    
-                    // Add completion indicator (don't show for rejected)
-                    if (!isRejected) {
+                        cell.textContent = status === 'no_update' ? 'COMPLETE' : status.toUpperCase();
+                        
+                        // Add completion indicator
                         const dot = document.createElement('span');
-                        dot.className = isComplete ? 'status-dot status-dot-complete'
-                                                : 'status-dot status-dot-incomplete';
+                        dot.className = 'status-dot status-dot-complete';
+                        cell.insertBefore(dot, cell.firstChild);
+                    }
+                    // Finally handle other statuses
+                    else {
+                        const displayStatus = status === 'no_update' ? 
+                            (app[confField] && app[confField] !== 'no_update' ? 'IN PROGRESS' : 'NO UPDATE') : 
+                            status.toUpperCase();
+                        
+                        cell.className = `status-${status.toLowerCase().replace(' ', '_')}`;
+                        cell.textContent = displayStatus;
+                        
+                        // Add progress indicator
+                        const dot = document.createElement('span');
+                        dot.className = 'status-dot status-dot-incomplete';
                         cell.insertBefore(dot, cell.firstChild);
                     }
                     
