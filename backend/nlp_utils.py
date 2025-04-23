@@ -1,131 +1,38 @@
 import ndjson
 from typing import Tuple
 import requests
+import google.generativeai as genai
 
 base_url = "http://localhost:11434"
 
+api_key = open("api_key.txt", "r").read().strip()
+genai.configure(api_key=api_key)
+model = genai.GenerativeModel("gemini-2.0-flash")
+
 def is_application(email: str) -> Tuple[bool, str]:
     url = base_url+"/api/chat"
-    payload = {
-        "model": "gemma3:latest",
-        "messages": [
-            {
-                "role": "user",
-                "content": "Return 'True' if the following email is application related, and return 'False' otherwise: "+email,
-                "options": {
-                    "num_predict": 1,
-                }
-            }
-        ]
-    }
-    response = requests.post(url, json=payload)
-    if response.status_code == 200:
-        result = ndjson.loads(response._content)
-        response_text = ""
-        for item in result:
-            if item['message']['role'] == 'assistant':
-                response_text = response_text+ item['message']['content']
-        return True, response_text.strip()
-    else:
-        return False, response.status_code
-    
+    prompt = "Return 'True' if the following email is application related, and return 'False' otherwise: "+email
+    response = model.generate_content(prompt)
+    return True, response.text.strip()
+
 def classify_email(email: str) -> Tuple[bool, str]:
     url = base_url+"/api/chat"
-    payload = {
-        "model": "gemma3:latest",
-        "messages": [
-            {
-                "role": "user",
-                "content": "Categorize the email into one of the categories: 'confirmation', 'update' or 'other'. Only return the category: "+email,
-                "options": {
-                    "num_predict": 1,
-                }
-            }
-        ]
-    }
-    response = requests.post(url, json=payload)
-    if response.status_code == 200:
-        result = ndjson.loads(response._content)
-        response_text = ""
-        for item in result:
-            if item['message']['role'] == 'assistant':
-                response_text = response_text+ item['message']['content']
-        return True, response_text.strip()
-    else:
-        return False, response.status_code
+    prompt = "Categorize the email into one of the categories: 'confirmation', 'update', 'posting'. Only return the category: "+email
+    response = model.generate_content(prompt)
+    return True, response.text.strip()
 
 def extract_info(email: str) -> Tuple[bool, list[str]]:
-    url = base_url+"/api/chat"
-    payload = {
-        "model": "gemma3:latest",
-        "messages": [
-            {
-                "role": "user",
-                "content": "Extract and return the company, position, date in format YYYYMMDD and result separated with comma. The result is 'Accepted' if it is a job offer, 'Action' if further action is required and 'Rejected' otherwise. The email is: "+email
-            }
-        ]
+    prompt = "Extract and return the company, position and date in format YYYYMMDD separated with comma. If company is unknown, let company be 'Unknown Company'. If position is unknown, let position be 'Unknown Position'. Do not return anything else. The email is: "+email
+    response = model.generate_content(prompt)
+    return True, response.text.strip().split(",")
     
-    }
-    response = requests.post(url, json=payload)
-    if response.status_code == 200:
-        result = ndjson.loads(response._content)
-        response_text = ""
-        for item in result:
-            if item['message']['role'] == 'assistant':
-                response_text = response_text+ item['message']['content']
-        return True, response_text.strip().split(",")
-    else:
-        return False, response.status_code
-    
-def classify_category(email: str) -> Tuple[bool, list[str]]:
-    url = base_url+"/api/chat"
-    payload = {
-        "model": "gemma3:latest",
-        "messages": [
-            {
-                "role": "user",
-                "content": "Classify the email into one of the following categories based on its primary content: 'Internship', 'Club', 'Education', 'Scholarship', or 'Other'. Respond with one word only, selecting the most appropriate category. The email is: "+email,
-                "options": {
-                    "num_predict": 1,
-                }
-            }
-        ]
-    
-    }
-    response = requests.post(url, json=payload)
-    if response.status_code == 200:
-        result = ndjson.loads(response._content)
-        response_text = ""
-        for item in result:
-            if item['message']['role'] == 'assistant':
-                response_text = response_text+ item['message']['content']
-        return True, response_text.strip()
-    else:
-        return False, response.status_code
+def classify_category(email: str) -> Tuple[bool, str]:
+    prompt = "Classify the email into one of the following categories based on its primary content: 'Internship', 'Club', 'Education', 'Scholarship', or 'Other'. Respond with one word only, selecting the most appropriate category. The email is: "+email
+    response = model.generate_content(prompt)
+    return True, response.text.strip()
     
 def email_action(email: str) -> Tuple[bool, str]:
-    url = base_url+"/api/chat"
-    payload = {
-        "model": "gemma3:latest",
-        "messages": [
-            {
-                "role": "user",
-                "content": "Categorize the email into one of the following categories: “rejection”, “assessment_invite”, “assessment_confirmation”, “interview_invite”, “interview_confirmation”, “decision_update”. Only return the category. The email is: "+email,
-                "options": {
-                    "num_predict": 1,
-                }
-            }
-        ]
-    
-    }
-    response = requests.post(url, json=payload)
-    if response.status_code == 200:
-        result = ndjson.loads(response._content)
-        response_text = ""
-        for item in result:
-            if item['message']['role'] == 'assistant':
-                response_text = response_text+ item['message']['content']
-        return True, response_text.strip()
-    else:
-        return False, response.status_code
+    prompt = "Categorize the email into one of the following categories: “rejection”, “assessment_invite”, “assessment_confirmation”, “interview_invite”, “interview_confirmation”, “decision_update”. Return 'rejection' only if the company stops considering me or is moving along with other candidates. Return “assessment_invite” or “assessment_confirmation” only if the email mentions an assessment. Return 'decision_update' only if the email is an offer to the position. Only return the category. The email is: "+email
+    response = model.generate_content(prompt)
+    return True, response.text.strip()
     

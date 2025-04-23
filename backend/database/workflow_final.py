@@ -111,10 +111,10 @@ def final_workflow(email: str) -> None:
 
     #2. Classify email type
     print(datetime.now().strftime("%H:%M:%S"),task_uuid,"Classifying email category...")
-    success, category_list = classify_category(email)
-    print(datetime.now().strftime("%H:%M:%S"),task_uuid,"Classified category:", category_list)
+    success, category = classify_category(email)
+    print(datetime.now().strftime("%H:%M:%S"),task_uuid,"Classified category:", category)
     if success:
-        category = category_list.lower() # make sure using this right
+        category = category.lower() # make sure using this right
         category_map = {
             "internship": INTERNSHIP,
             "club": CLUB,
