@@ -6,16 +6,27 @@ from database.workflow_final import final_workflow
 
 app = Flask(__name__)
 
+def deconstruct_parts(data):
+    text = ""
+    if "body" in data:
+        encoded_text = data["body"].get("data", "")
+        decoded_bytes = base64.urlsafe_b64decode(encoded_text + '==')
+        decoded_text = decoded_bytes.decode('utf-8')
+        text += decoded_text
+    if "parts" in data:
+            for part in data['parts']:
+                text += deconstruct_parts(part)
+    return text
+
 @app.route('/new-mail', methods=['POST'])
 def api_endpoint():
     data = request.get_json()
     if not data:
         print(jsonify({"error": "No JSON data provided"}))
-    if ('UNREAD' in data['labelIds']):
+    if 'labelIds' in data and 'UNREAD' in data['labelIds']:
         sender = ''
         subject = ''
         date = ''
-        text = ''
         for token in data['payload']['headers']:
             if token['name'] == 'From':
                 sender = token['value']
@@ -23,12 +34,8 @@ def api_endpoint():
                 subject = token['value']
             elif token['name'] == 'Date':
                 date = token['value']
-        for part in data['payload']['parts']:
-            if part.get("mimeType") == "text/plain":
-                data = part.get("body", {}).get("data", "")
-                decoded_bytes = base64.urlsafe_b64decode(data)
-                decoded_text = decoded_bytes.decode("utf-8")
-                text = decoded_text
+        text = deconstruct_parts(data["payload"])
+        
         response = {
             'sender': sender,
             'subject': subject,
