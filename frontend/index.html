@@ -543,21 +543,6 @@
             const row = document.createElement('tr');
             const columnOrder = Array.from(headers).map(header => header.textContent.toLowerCase());
             
-            // Track completed stages
-            const completedStages = [];
-            
-            // First pass to determine completed stages
-            columnOrder.forEach(columnName => {
-                if (columnName !== 'company') {
-                    const fieldNames = getFieldNames(tabName, columnName);
-                    const confField = fieldNames.conf;
-                    if (app[confField] === 'complete') {
-                        completedStages.push(columnName);
-                    }
-                }
-            });
-
-            // Second pass to create cells
             columnOrder.forEach(columnName => {
                 const cell = document.createElement('td');
                 
@@ -576,20 +561,30 @@
                     
                     // Set cell class and content
                     const isComplete = app[confField] === 'complete';
-                    cell.className = `status-${status.toLowerCase().replace(' ', '_')}`;
+                    const isRejected = status.toLowerCase() === 'rejected';
                     
-                    // If stage is complete, keep the completed color
-                    if (isComplete) {
+                    // Special case for rejected - always show red
+                    if (isRejected) {
+                        cell.className = 'status-rejected';
+                    } 
+                    // If stage is complete and not rejected, show green
+                    else if (isComplete) {
                         cell.className = 'status-complete';
+                    }
+                    // Otherwise use the regular status coloring
+                    else {
+                        cell.className = `status-${status.toLowerCase().replace(' ', '_')}`;
                     }
                     
                     cell.textContent = status === 'no_update' ? 'NO UPDATE' : status.toUpperCase();
                     
-                    // Add completion indicator
-                    const dot = document.createElement('span');
-                    dot.className = isComplete ? 'status-dot status-dot-complete'
-                                            : 'status-dot status-dot-incomplete';
-                    cell.insertBefore(dot, cell.firstChild);
+                    // Add completion indicator (don't show for rejected)
+                    if (!isRejected) {
+                        const dot = document.createElement('span');
+                        dot.className = isComplete ? 'status-dot status-dot-complete'
+                                                : 'status-dot status-dot-incomplete';
+                        cell.insertBefore(dot, cell.firstChild);
+                    }
                     
                     // Enhanced tooltip with update time
                     let tooltip = `${columnName.toUpperCase()}: ${status.toUpperCase()}`;
