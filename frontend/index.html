@@ -560,7 +560,7 @@
                     const isComplete = app[confField] === 'complete';
                     
                     // First check for rejected status - this takes priority over everything
-                    if (status.toLowerCase() === 'rejected') {
+                    if (status.toLowerCase() === 'reject') {
                         cell.className = 'status-rejected';
                         cell.textContent = 'REJECTED';
                         
