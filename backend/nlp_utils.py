@@ -46,7 +46,7 @@ def email_action(email: str) -> Tuple[bool, str]:
     email=json.loads(email)
     subject = email["subject"]
     body = email["text"]
-    prompt = "Categorize the email into one of the following categories: “rejection”, “assessment_invite”, “assessment_confirmation”, “interview_invite”, “interview_confirmation”, “decision_update”. Return 'rejection' only if the company stops considering me or is moving along with other candidates. Return “assessment_invite” or “assessment_confirmation” only if the email mentions an assessment. Return 'decision_update' only if the email is an offer to the position. Only return the category. Subject is "+subject+ " and body is "+body
+    prompt = "Categorize the email into one of the following categories: 'confirmation', 'assessment_invite', 'assessment_confirmation', 'interview_invite', 'interview_confirmation', 'rejection', “decision_update”. Return 'rejection' only if the company stops considering me or is moving along with other candidates. Return “assessment_invite” or “assessment_confirmation” only if the email mentions an assessment. Return 'decision_update' only if the email is an offer to the position. Only return the category. Subject is "+subject+ " and body is "+body
     response = model.generate_content(prompt)
     return True, response.text.strip()
     
