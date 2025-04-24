@@ -38,7 +38,7 @@ def classify_category(email: str) -> Tuple[bool, str]:
     email=json.loads(email)
     subject = email["subject"]
     body = email["text"]
-    prompt = "Classify the email into one of the following categories based on its primary content: 'Internship', 'Club', 'Education', 'Scholarship', or 'Other'. Respond with one word only, selecting the most appropriate category. Subject is "+subject+ " and body is "+body
+    prompt = "Classify the email into one of the following categories based on its primary content: 'Internship', 'Club', 'Education', or 'Scholarship'. Respond with one word only, selecting the most appropriate category. Subject is "+subject+ " and body is "+body
     response = model.generate_content(prompt)
     return True, response.text.strip()
     

@@ -173,7 +173,7 @@ def final_workflow(email: str) -> None:
         rejection_func(key)
 
     #6. Handle all other actions
-    else:
+    elif action_type != "confirmation":
         update_func = flow_dispatch.get((app_type, action_type))
         update_func(key)
 
