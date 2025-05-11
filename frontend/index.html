@@ -565,7 +565,7 @@
                     // First check for rejected status - this takes priority over everything
                     if (status.toLowerCase() === 'reject') {
                         cell.className = 'status-rejected';
-                        cell.textContent = 'REJECTED';
+                        // cell.textContent = 'REJECTED';
                         
                         // Add rejection indicator (optional)
                         const xIcon = document.createElement('span');
@@ -576,7 +576,7 @@
                     // Then handle completed stages
                     else if (isComplete) {
                         cell.className = 'status-complete';
-                        cell.textContent = status === 'no_update' ? 'COMPLETE' : status.toUpperCase();
+                        // cell.textContent = status === 'no_update' ? 'COMPLETE' : status.toUpperCase();
                         
                         // Add completion indicator
                         const dot = document.createElement('span');
@@ -590,7 +590,7 @@
                             status.toUpperCase();
                         
                         cell.className = `status-${status.toLowerCase().replace(' ', '_')}`;
-                        cell.textContent = displayStatus;
+                        // cell.textContent = displayStatus;
                         
                         // Add progress indicator
                         const dot = document.createElement('span');
