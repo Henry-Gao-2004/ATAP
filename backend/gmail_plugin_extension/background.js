@@ -1,3 +1,4 @@
+let ipv4s = ["192.168.56.1", "192.168.1.74"]
 let lastChecked = Date.now();
 
 chrome.runtime.onInstalled.addListener(() => {
@@ -30,7 +31,7 @@ async function checkForNewEmails(token) {
             `https://www.googleapis.com/gmail/v1/users/me/messages?q=${encodeURIComponent(query)}`,
             {
                 method: "GET",
-                headers: { Authorization: `Bearer ${token}`},
+                headers: { Authorization: `Bearer ${token}` },
                 Accept: "application/json"
             }
         );
@@ -73,14 +74,24 @@ async function checkForNewEmails(token) {
                     }
                 );
                 const msgData = await msgRes.json();
-                await fetch("http://192.168.56.1:5000/new-mail", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(msgData)
-                });
+                for (const idx in ipv4s) {
+                    let ipv4 = ipv4s[idx];
+                    try {
+                        await fetch("http://" + ipv4 + ":5000/new-mail", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify(msgData)
+                        });
+                        console.log("data sent to " + ipv4);
+                    }
+                    catch (error) {
+                        if (error instanceof TypeError) 
+                            console.log(ipv4+" is not running");
+                        else 
+                            console.error("Error sending data to " + ipv4, error);
+                    }
+                }
             }
-        } else {
-            console.log("No new messages.");
         }
     } catch (error) {
         console.error("Error fetching emails:", error);
