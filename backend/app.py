@@ -25,11 +25,14 @@ def api_endpoint():
         print(jsonify({"error": "No JSON data provided"}))
     if 'labelIds' in data and 'UNREAD' in data['labelIds']:
         sender = ''
-        subject = ''
+        recipient = ''
         date = ''
+        print(data['payload']['headers'])
         for token in data['payload']['headers']:
             if token['name'] == 'From':
                 sender = token['value']
+            elif token['name'] == 'To':
+                recipient = token['value']
             elif token['name'] == 'Subject':
                 subject = token['value']
             elif token['name'] == 'Date':
@@ -38,6 +41,7 @@ def api_endpoint():
         
         response = {
             'sender': sender,
+            'recipient': recipient,
             'subject': subject,
             'date': date,
             'text': text
