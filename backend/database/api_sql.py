@@ -3,6 +3,7 @@
 import os
 import sqlite3
 import logging
+from datetime import datetime
 from flask import Flask, g, jsonify, request
 from flask_cors import CORS
 
@@ -41,8 +42,24 @@ def close_db(error):
         db.close()
 
 def row_to_dict(row):
-    """Convert a sqlite3.Row to a standard dict."""
-    return {key: row[key] for key in row.keys()}
+    """Convert a sqlite3.Row to a dict and add a consolidated last_updated."""
+    data = { key: row[key] for key in row.keys() }
+
+    timestamps = []
+    for col, val in data.items():
+        if col.endswith('_updated') and val:
+            try:
+                timestamps.append(datetime.fromisoformat(val))
+            except ValueError:
+                continue
+
+    if timestamps:
+        data['last_updated'] = max(timestamps).isoformat()
+    else:
+        data['last_updated'] = None
+
+    return data
+
 
 # --- Utility Functions ---
 def parse_positive_int(param, default):
