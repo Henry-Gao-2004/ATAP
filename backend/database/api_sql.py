@@ -25,7 +25,7 @@ CORS(app)
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# --- Database Helpers ---
+# ---- Database Helpers ----
 def get_db():
     create_schema()
     """Get a SQLite connection for the current request context."""

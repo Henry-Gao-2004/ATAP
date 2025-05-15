@@ -11,7 +11,7 @@ def create_schema(db_path: str = DB_PATH) -> None:
     conn = sqlite3.connect(db_path)
     c = conn.cursor()
 
-    # Users table
+    ## Users table
     c.execute("""
     CREATE TABLE IF NOT EXISTS users (
         id            INTEGER PRIMARY KEY AUTOINCREMENT,
