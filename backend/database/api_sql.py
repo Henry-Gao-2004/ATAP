@@ -4,7 +4,7 @@ import os
 import sqlite3
 import logging
 from datetime import datetime
-from flask import Flask, g, jsonify, request
+from flask import Flask, g, jsonify, request, session
 from flask_cors import CORS
 
 from sql_database import create_schema
@@ -18,6 +18,7 @@ class Config:
 # --- App Initialization ---
 app = Flask(__name__)
 app.config.from_object(Config)
+app.secret_key = os.getenv('FLASK_SECRET', 'dev-secret-key')
 CORS(app)
 
 # Setup basic logging
@@ -31,6 +32,7 @@ def get_db():
     if "db" not in g:
         conn = sqlite3.connect(app.config["DB_PATH"])
         conn.row_factory = sqlite3.Row
+        conn.execute("PRAGMA foreign_keys = ON;")
         g.db = conn
     return g.db
 
@@ -85,6 +87,11 @@ def version():
 # --- Dynamic Endpoint Factories ---
 def list_endpoint(table, filters=None):
     def endpoint():
+        # Require login
+        user_id = session.get('user_id')
+        if not user_id:
+            return jsonify({'error': 'Unauthorized'}), 401
+
         db = get_db()
         # Pagination
         limit, err = parse_positive_int("limit", app.config["DEFAULT_LIMIT"])
@@ -94,28 +101,41 @@ def list_endpoint(table, filters=None):
         if err:
             return jsonify({"error": err}), 400
         limit = min(limit, app.config["MAX_LIMIT"])
-        # Base query
-        query = f"SELECT * FROM {table}"
-        clauses, params = [], []
-        # Optional filters
+
+        # Build WHERE clauses starting with user filter
+        clauses = ["user_id = ?"]
+        params = [user_id]
+
+        # Optional filters from query parameters
         if filters:
             for arg, col in filters.items():
                 value = request.args.get(arg)
                 if value:
                     clauses.append(f"{col} = ?")
                     params.append(value)
-        if clauses:
-            query += " WHERE " + " AND ".join(clauses)
+
+        # Finalize query
+        query = f"SELECT * FROM {table} WHERE " + " AND ".join(clauses)
         query += " LIMIT ? OFFSET ?"
         params.extend([limit, offset])
+
         rows = db.execute(query, params).fetchall()
         return jsonify([row_to_dict(r) for r in rows]), 200
     return endpoint
 
 def get_endpoint(table):
     def endpoint(key):
+        # Require login
+        user_id = session.get('user_id')
+        if not user_id:
+            return jsonify({'error': 'Unauthorized'}), 401
+
         db = get_db()
-        row = db.execute(f"SELECT * FROM {table} WHERE key = ?", (key,)).fetchone()
+        # Fetch only this user’s record
+        row = db.execute(
+            f"SELECT * FROM {table} WHERE key = ? AND user_id = ?",
+            (key, user_id)
+        ).fetchone()
         if row is None:
             return jsonify({"error": f"{table} entry {key!r} not found"}), 404
         return jsonify(row_to_dict(row)), 200
