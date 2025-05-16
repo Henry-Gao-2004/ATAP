@@ -27,13 +27,14 @@ NO_UPDATE = 'no_update' # white
 
 # Internships
 
-def internship_insert(key: str) -> None:
+def internship_insert(key: str, recipient_email: str) -> None:
     now = datetime.now().isoformat()
     entry = {
         "application": {
             "confirmation": COMPLETE,
             "result": IN_PROGRESS,
-            "updated": now
+            "updated": now,
+            "email": recipient_email
         },
         "assessment": {
             "confirmation": INCOMPLETE,
@@ -56,13 +57,14 @@ def internship_insert(key: str) -> None:
 
 # Master's Programs
 
-def masters_insert(key: str) -> None:
+def masters_insert(key: str, recipient_email: str) -> None:
     now = datetime.now().isoformat()
     entry = {
         "application": {
             "confirmation": COMPLETE,
             "result": IN_PROGRESS,
-            "updated": now
+            "updated": now,
+            "email": recipient_email,
         },
         "assessment": {
             "confirmation": INCOMPLETE,
@@ -85,13 +87,14 @@ def masters_insert(key: str) -> None:
 
 # Scholarships (keep in mind that definition of assessment varies with application type)
 
-def scholar_insert(key: str) -> None:
+def scholar_insert(key: str, recipient_email: str) -> None:
     now = datetime.now().isoformat()
     entry = {
         "application": {
             "confirmation": COMPLETE,
             "result": IN_PROGRESS,
-            "updated": now
+            "updated": now,
+            "email": recipient_email,
         },
         "interview": {
             "confirmation": INCOMPLETE,
@@ -109,13 +112,14 @@ def scholar_insert(key: str) -> None:
 
 # Clubs (keep in mind that definition of assessment varies with application type)
 
-def club_insert(key: str) -> None:
+def club_insert(key: str, recipient_email: str) -> None:
     now = datetime.now().isoformat()
     entry = {
         "application": {
             "confirmation": COMPLETE,
             "result": IN_PROGRESS,
-            "updated": now
+            "updated": now,
+            "email": recipient_email,
         },
         "interview": {
             "confirmation": INCOMPLETE,
