@@ -110,7 +110,7 @@ def final_workflow(email: str) -> None:
         return
 
     # 1a. Grab recipient email
-    recipient_email = email.get_recipient()
+    recipient_email = get_recipient(email)
 
     #2. Classify email type
     print(datetime.now().strftime("%H:%M:%S"),task_uuid,"Classifying email category...")
