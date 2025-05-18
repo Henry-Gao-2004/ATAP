@@ -422,6 +422,11 @@
                     ...scholarships.map(app => formatForHome(app, 'Scholarship')),
                     ...clubs.map(app => formatForHome(app, 'Club'))
                 ];
+                combined.sort((a, b) => {
+                    const da = new Date(a.lastUpdated);
+                    const db = new Date(b.lastUpdated);
+                    return db - da;
+                });
                 populateHomeTable(combined);
             }).catch(error => {
                 console.error('Error fetching data:', error);
