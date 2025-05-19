@@ -114,13 +114,12 @@
         }
         table {
             width: 100%;
-            border-collapse: separate;
-            border-spacing: 12px 15px;
+            border-collapse: collapse;
             margin-top: 15px;
             table-layout: fixed;
         }
         th {
-            border-radius: 10px;
+            padding: 12px 15px;
             text-align: center;
             border-bottom: 1px solid #ddd;
             word-wrap: break-word;
@@ -128,7 +127,7 @@
             font-weight: bold;
         }
         td {
-            border-radius: 10px;
+            padding: 12px 15px;
             text-align: center;
             border-bottom: 1px solid #ddd;
             word-wrap: break-word;
@@ -187,7 +186,7 @@
             padding: 20px;
             text-align: center;
         }
-        /* if no results using search bar */ 
+        /* if no results using search bar */
         .no-results {
             color: #999;
             font-style: italic;
@@ -202,19 +201,19 @@
             color: #000;
         }
         .status-in_progress {
-            background-color: #ffa500;   
+            background-color: #ffa500;
             color: #000;
         }
         .status-rejected {
-            background-color: #ff6b6b; 
+            background-color: #ff6b6b;
             color: #000;
         }
         .status-pending {
-            background-color: #f8f8f8; 
+            background-color: #f8f8f8;
             color: #555;
         }
         .status-not_started {
-            background-color: #ffffff; 
+            background-color: #ffffff;
             color: #999;
             font-style: italic;
         }
@@ -236,7 +235,7 @@
         }
 
 
-        
+
     </style>
 </head>
 
@@ -248,7 +247,7 @@
             <input type="text" class="search-input" placeholder="Search applications..." id="searchInput">
         </div>
     </div>
-                
+
          <!-- Tabs for different application types -->
         <div class="tabs">
             <div class="tab active" onclick="openTab(event, 'home')">Home</div>
@@ -257,7 +256,7 @@
             <div class="tab" onclick="openTab(event, 'masters')">Masters Programs</div>
             <div class="tab" onclick="openTab(event, 'scholar')">Scholarships</div>
         </div>
-        
+
         <!-- Home Tab -->
         <div id="home" class="tab-content active">
             <table id="home-table">
@@ -265,6 +264,7 @@
                     <tr>
                         <th>Application Name</th>
                         <th>Application Type</th>
+                        <th>Last Updated</th>
                         <th>Stage</th>
                     </tr>
                 </thead>
@@ -277,7 +277,7 @@
             </table>
             <div class="no-results" id="home-no-results">No matching applications found</div>
         </div>
-        
+
         <!-- Clubs Tab -->
         <div id="clubs" class="tab-content">
             <table id="clubs-table">
@@ -298,7 +298,7 @@
             </table>
             <div class="no-results" id="home-no-results">No matching applications found</div>
         </div>
-        
+
         <!-- Internships Tab -->
         <div id="internships" class="tab-content">
             <table id="internships-table">
@@ -320,7 +320,7 @@
             </table>
             <div class="no-results" id="home-no-results">No matching applications found</div>
         </div>
-        
+
         <!-- Masters Programs Tab -->
         <div id="masters" class="tab-content">
             <table id="masters-table">
@@ -341,7 +341,7 @@
             </table>
             <div class="no-results" id="home-no-results">No matching applications found</div>
         </div>
-        
+
         <!-- Scholar Tab -->
         <div id="scholar" class="tab-content">
             <table id="scholar-table">
@@ -368,7 +368,7 @@
     <script>
 
         // Configure (connecting backend to frontend)
-        const API_BASE_URL = 'http://localhost:8000'; // change 
+        const API_BASE_URL = 'http://localhost:8000'; // change
 
         (host="0.0.0.0", port=8000)
 
@@ -379,13 +379,13 @@
             for (var i = 0; i < tabContents.length; i++) {
                 tabContents[i].classList.remove("active");
             }
-            
+
             // Remove active class from all tabs
             var tabs = document.getElementsByClassName("tab");
             for (var i = 0; i < tabs.length; i++) {
                 tabs[i].classList.remove("active");
             }
-            
+
             // Show the current tab and add active class
             document.getElementById(tabName).classList.add("active");
             evt.currentTarget.classList.add("active");
@@ -397,7 +397,7 @@
         // Load data for a specific tab
         function loadTabData(tabName) {
             showLoading(tabName);
-            // Map frontend tab names to API endpoints in backend 
+            // Map frontend tab names to API endpoints in backend
             const endpointMap = {
                 'home': null, // Special case - combine data from all endpoints
                 'internships': 'internships',
@@ -406,7 +406,7 @@
                 'clubs': 'clubs'
         };
 
-            
+
         if (tabName === 'home') {
             // For home tab, fetch data from all endpoints
             Promise.all([
@@ -422,6 +422,11 @@
                     ...scholarships.map(app => formatForHome(app, 'Scholarship')),
                     ...clubs.map(app => formatForHome(app, 'Club'))
                 ];
+                combined.sort((a, b) => {
+                    const da = new Date(a.lastUpdated);
+                    const db = new Date(b.lastUpdated);
+                    return db - da;
+                });
                 populateHomeTable(combined);
             }).catch(error => {
                 console.error('Error fetching data:', error);
@@ -439,7 +444,7 @@
             }
         }
     }
-    
+
     // Fetch data from API
     function fetchData(endpoint) {
         return fetch(`${API_BASE_URL}/${endpoint}?limit=100`)
@@ -450,16 +455,39 @@
                 return response.json();
             });
     }
-    
+
     // Format data for home table view
     function formatForHome(app, type) {
         // change based on schema -- GO BACK
         return {
             name: app.key || app.company || app.school || app.sponsor || app.club || 'Unknown',
             type: type,
-            lastUpdated: app.last_updated || 'Unknown',
+            lastUpdated: app.last_updated || null,
             stage: app.status || 'Unknown'
         };
+    }
+
+    // Formatting date into "relative time" from SQL table
+    function formatRelativeTime(isoString) {
+            const date = new Date(isoString).getTime();
+            const now  = Date.now();
+            const diff = date - now; // negative = past
+            const rtf = new Intl.RelativeTimeFormat('en', { numeric: 'auto' });
+            const units = [
+                { name: 'year',   ms: 1000*60*60*24*365 },
+                { name: 'month',  ms: 1000*60*60*24*30  },
+                { name: 'week',   ms: 1000*60*60*24*7   },
+                { name: 'day',    ms: 1000*60*60*24     },
+                { name: 'hour',   ms: 1000*60*60        },
+                { name: 'minute', ms: 1000*60           }
+            ];
+            for (let {name, ms} of units) {
+                const amt = diff / ms;
+                if (Math.abs(amt) >= 1) {
+                    return rtf.format(Math.round(amt), name);
+                }
+            }
+            return 'just now';
     }
 
     // Show loading state
@@ -468,13 +496,13 @@
         const tbody = table.querySelector('tbody');
         tbody.innerHTML = '<tr><td colspan="4" style="text-align: center;">Loading applications...</td></tr>';
     }
-    
+
     // Show error state
     function showError(tabName, message) {
         const table = document.getElementById(`${tabName}-table`);
         const tbody = table.querySelector('tbody');
         const headers = table.querySelectorAll('thead th');
-    
+
         tbody.innerHTML = `<tr><td colspan="${headers.length}" style="text-align: center; color: red;">${message}</td></tr>`;
     }
 
@@ -482,10 +510,10 @@
     function populateHomeTable(applications) {
         const table = document.getElementById('home-table');
         const tbody = table.querySelector('tbody');
-        
+
         // Clear existing rows
         tbody.innerHTML = '';
-        
+
         if (applications.length === 0) {
             const row = document.createElement('tr');
             row.className = 'empty-message';
@@ -493,27 +521,30 @@
             tbody.appendChild(row);
             return;
         }
-        
+
         applications.forEach(app => {
             const row = document.createElement('tr');
-            
+
             // Application Name
             const nameCell = document.createElement('td');
             const prettyName = (app.name || 'Unknown').replace(/_/g, ' ');
             nameCell.textContent = prettyName;
             row.appendChild(nameCell);
-            
+
             // Type
             const typeCell = document.createElement('td');
             typeCell.className = 'application-type';
             typeCell.textContent = app.type;
             row.appendChild(typeCell);
-            
+
             // Last Updated
-            /*const updatedCell = document.createElement('td');
-            updatedCell.className = 'last-updated';
-            updatedCell.textContent = app.lastUpdated;
-            row.appendChild(updatedCell);*/ 
+            const updatedCell = document.createElement('td');
+            if (app.lastUpdated) {
+              updatedCell.textContent = 'Updated ' + formatRelativeTime(app.lastUpdated);
+            } else {
+              updatedCell.textContent = '—';
+            }
+            row.appendChild(updatedCell);
             
             // Stage
             const stageCell = document.createElement('td');
@@ -717,7 +748,7 @@
                 const tabName = document.querySelector('.tab.active').getAttribute('onclick').split("'")[1];
                 loadTabData(tabName);
             }
-        }, 300000); // 5 minutes
+        }, 300000); // 5 minutes check
     });
         
     </script>

@@ -13,7 +13,8 @@ def create_schema(db_path: str = DB_PATH) -> None:
     # Internships table
     c.execute("""
     CREATE TABLE IF NOT EXISTS internships (
-        key               TEXT PRIMARY KEY,
+        key               TEXT NOT NULL,
+        recipient_email   TEXT NOT NULL,
         app_conf          TEXT,
         app_result        TEXT,
         app_updated       TEXT,
@@ -25,14 +26,16 @@ def create_schema(db_path: str = DB_PATH) -> None:
         interview_updated TEXT,
         offer_conf        TEXT,
         offer_result      TEXT,
-        offer_updated     TEXT
+        offer_updated     TEXT,
+        PRIMARY KEY (key, recipient_email)
     );
     """)
 
     # Master's Programs Table
     c.execute("""
     CREATE TABLE IF NOT EXISTS masters (
-        key               TEXT PRIMARY KEY,
+        key               TEXT NOT NULL,
+        recipient_email   TEXT NOT NULL,
         app_conf          TEXT,
         app_result        TEXT,
         app_updated       TEXT,
@@ -44,14 +47,16 @@ def create_schema(db_path: str = DB_PATH) -> None:
         interview_updated TEXT,
         decision_conf     TEXT,
         decision_result   TEXT,
-        decision_updated  TEXT
+        decision_updated  TEXT,
+        PRIMARY KEY (key, recipient_email)
     );
     """)
 
     # Scholarships table
     c.execute("""
     CREATE TABLE IF NOT EXISTS scholarships (
-        key               TEXT PRIMARY KEY,
+        key               TEXT NOT NULL,
+        recipient_email   TEXT NOT NULL,
         app_conf          TEXT,
         app_result        TEXT,
         app_updated       TEXT,
@@ -60,14 +65,16 @@ def create_schema(db_path: str = DB_PATH) -> None:
         interview_updated TEXT,
         decision_conf     TEXT,
         decision_result   TEXT,
-        decision_updated  TEXT
+        decision_updated  TEXT,
+        PRIMARY KEY (key, recipient_email)
     );
     """)
 
     # Clubs table
     c.execute("""
     CREATE TABLE IF NOT EXISTS clubs (
-        key               TEXT PRIMARY KEY,
+        key               TEXT NOT NULL,
+        recipient_email   TEXT NOT NULL,
         app_conf          TEXT,
         app_result        TEXT,
         app_updated       TEXT,
@@ -76,7 +83,8 @@ def create_schema(db_path: str = DB_PATH) -> None:
         interview_updated TEXT,
         offer_conf        TEXT,
         offer_result      TEXT,
-        offer_updated     TEXT
+        offer_updated     TEXT,
+        PRIMARY KEY (key, recipient_email)
     );
     """)
     conn.commit()
@@ -87,15 +95,17 @@ def persist_internships(apps: dict, db_path: str = DB_PATH) -> None:
     conn = sqlite3.connect(db_path)
     c = conn.cursor()
     for key, entry in apps.items():
+        recipient = entry["application"]["email"]
         c.execute("""
             INSERT OR REPLACE INTO internships
-                (key, app_conf, app_result, app_updated,
+                (key, recipient_email, app_conf, app_result, app_updated,
                  assess_conf, assess_result, assess_updated,
                  interview_conf, interview_result, interview_updated,
                  offer_conf, offer_result, offer_updated)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
             key,
+            recipient,
             entry["application"]["confirmation"],
             entry["application"]["result"],
             entry["application"].get("updated", datetime.now().isoformat()),
@@ -113,18 +123,21 @@ def persist_internships(apps: dict, db_path: str = DB_PATH) -> None:
     conn.close()
 
 def persist_masters(apps: dict, db_path: str = DB_PATH) -> None:
+    create_schema(db_path)
     conn = sqlite3.connect(db_path)
     c = conn.cursor()
     for key, entry in apps.items():
+        recipient = entry["application"]["email"]
         c.execute("""
             INSERT OR REPLACE INTO masters
-                (key, app_conf, app_result, app_updated,
+                (key, recipient_email, app_conf, app_result, app_updated,
                  assess_conf, assess_result, assess_updated,
                  interview_conf, interview_result, interview_updated,
                  decision_conf, decision_result, decision_updated)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
             key,
+            recipient,
             entry["application"]["confirmation"],
             entry["application"]["result"],
             entry["application"].get("updated", datetime.now().isoformat()),
@@ -142,17 +155,20 @@ def persist_masters(apps: dict, db_path: str = DB_PATH) -> None:
     conn.close()
 
 def persist_scholarships(apps: dict, db_path: str = DB_PATH) -> None:
+    create_schema(db_path)
     conn = sqlite3.connect(db_path)
     c = conn.cursor()
     for key, entry in apps.items():
+        recipient = entry["application"]["email"]
         c.execute("""
             INSERT OR REPLACE INTO scholarships
-                (key, app_conf, app_result, app_updated,
+                (key, recipient_email, app_conf, app_result, app_updated,
                  interview_conf, interview_result, interview_updated,
                  decision_conf, decision_result, decision_updated)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
             key,
+            recipient,
             entry["application"]["confirmation"],
             entry["application"]["result"],
             entry["application"].get("updated", datetime.now().isoformat()),
@@ -167,17 +183,20 @@ def persist_scholarships(apps: dict, db_path: str = DB_PATH) -> None:
     conn.close()
 
 def persist_clubs(apps: dict, db_path: str = DB_PATH) -> None:
+    create_schema(db_path)
     conn = sqlite3.connect(db_path)
     c = conn.cursor()
     for key, entry in apps.items():
+        recipient = entry["application"]["email"]
         c.execute("""
             INSERT OR REPLACE INTO clubs
-                (key, app_conf, app_result, app_updated,
+                (key, recipient_email, app_conf, app_result, app_updated,
                  interview_conf, interview_result, interview_updated,
                  offer_conf, offer_result, offer_updated)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
             key,
+            recipient,
             entry["application"]["confirmation"],
             entry["application"]["result"],
             entry["application"].get("updated", datetime.now().isoformat()),

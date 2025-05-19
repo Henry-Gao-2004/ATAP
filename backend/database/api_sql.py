@@ -3,6 +3,7 @@
 import os
 import sqlite3
 import logging
+from datetime import datetime
 from flask import Flask, g, jsonify, request
 from flask_cors import CORS
 
@@ -41,8 +42,24 @@ def close_db(error):
         db.close()
 
 def row_to_dict(row):
-    """Convert a sqlite3.Row to a standard dict."""
-    return {key: row[key] for key in row.keys()}
+    """Convert a sqlite3.Row to a dict and add a consolidated last_updated."""
+    data = { key: row[key] for key in row.keys() }
+
+    timestamps = []
+    for col, val in data.items():
+        if col.endswith('_updated') and val:
+            try:
+                timestamps.append(datetime.fromisoformat(val))
+            except ValueError:
+                continue
+
+    if timestamps:
+        data['last_updated'] = max(timestamps).isoformat()
+    else:
+        data['last_updated'] = None
+
+    return data
+
 
 # --- Utility Functions ---
 def parse_positive_int(param, default):
@@ -69,7 +86,8 @@ def version():
 def list_endpoint(table, filters=None):
     def endpoint():
         db = get_db()
-        # Pagination
+
+        # 1) Parse pagination params
         limit, err = parse_positive_int("limit", app.config["DEFAULT_LIMIT"])
         if err:
             return jsonify({"error": err}), 400
@@ -77,23 +95,35 @@ def list_endpoint(table, filters=None):
         if err:
             return jsonify({"error": err}), 400
         limit = min(limit, app.config["MAX_LIMIT"])
-        # Base query
-        query = f"SELECT * FROM {table}"
-        clauses, params = [], []
-        # Optional filters
+
+        # 2) Build base query (no LIMIT/OFFSET)
+        query   = f"SELECT * FROM {table}"
+        clauses = []
+        params  = []
         if filters:
             for arg, col in filters.items():
-                value = request.args.get(arg)
-                if value:
+                val = request.args.get(arg)
+                if val:
                     clauses.append(f"{col} = ?")
-                    params.append(value)
+                    params.append(val)
         if clauses:
             query += " WHERE " + " AND ".join(clauses)
-        query += " LIMIT ? OFFSET ?"
-        params.extend([limit, offset])
+
+        # 3) Execute and fetch all rows
         rows = db.execute(query, params).fetchall()
-        return jsonify([row_to_dict(r) for r in rows]), 200
+
+        # 4) Convert to dicts and sort by last_updated desc
+        items = [row_to_dict(r) for r in rows]
+        items.sort(key=lambda d: d.get("last_updated", ""), reverse=True)
+
+        # 5) Slice out the requested page
+        page = items[offset: offset + limit]
+
+        return jsonify(page), 200
+
     return endpoint
+
+
 
 def get_endpoint(table):
     def endpoint(key):
