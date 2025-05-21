@@ -2,6 +2,7 @@ from flask import Flask, redirect, request
 import requests
 import os
 from urllib.parse import urlencode
+from flask import render_template
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
@@ -20,8 +21,12 @@ AUTH_URI = discovery_doc["authorization_endpoint"]
 TOKEN_URI = discovery_doc["token_endpoint"]
 USERINFO_URI = discovery_doc["userinfo_endpoint"]
 
+USER_EMAIL = ""
+
 @app.route("/")
 def index():
+    if USER_EMAIL:
+        return redirect("/index.html")
     return '<a href="/login">Login with Google</a>'
 
 @app.route("/login")
@@ -61,13 +66,18 @@ def callback():
     headers = {"Authorization": f"Bearer {access_token}"}
     userinfo_resp = requests.get(USERINFO_URI, headers=headers)
     userinfo = userinfo_resp.json()
-    email = userinfo.get("email")
+    USER_EMAIL = userinfo.get("email")
 
-    if not email:
+
+    if not USER_EMAIL:
         return "Failed to retrieve email", 400
 
     # Redirect to localhost:5001 with email as query param
-    return redirect(f"http://localhost:5001?email={email}")
+    return redirect(f"http://localhost:5001")
+
+@app.route("/index.html")
+def index_html():
+    return render_template("index.html", email=USER_EMAIL)
 
 if __name__ == "__main__":
     app.run(port=5001, debug=True)
