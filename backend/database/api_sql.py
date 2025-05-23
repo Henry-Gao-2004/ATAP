@@ -11,7 +11,7 @@ from sql_database import create_schema
 
 # --- Configuration ---
 class Config:
-    DB_PATH = os.getenv("APPLICATIONS_DB_PATH", "applications.db")
+    DB_PATH = os.getenv("APPLICATIONS_DB_PATH", "backend/database/applications.db")
     DEFAULT_LIMIT = 100
     MAX_LIMIT = 1000
 

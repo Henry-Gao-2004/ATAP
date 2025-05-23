@@ -2,6 +2,10 @@ from nlp_utils import *
 from database.sql_database import *
 from database.flow import *
 import uuid
+import sqlite3
+
+DB_PATH = "C:\\User\\School\\2025_Spring\\CS329\\ATAP\\backend\\database\\applications.db"
+
 
 # Constants
 
@@ -139,30 +143,70 @@ def final_workflow(email: str) -> None:
     print(datetime.now().strftime("%H:%M:%S"),task_uuid,"Extracted info:", info)
 
     if app_type == INTERNSHIP and success and len(info) >= 2:
+        company_raw = info[0].strip()
         company = info[0].strip().replace(" ", "_")
         position = info[1].strip().replace(" ", "_")
         key = f"{company}_{position}"
         if key not in internship_applications:
             internship_insert(key, recipient_email)
+            success, domain = guess_domain(company_raw, "company")
+            conn = sqlite3.connect(DB_PATH)
+            c    = conn.cursor()
+            c.execute(
+                "UPDATE internships SET domain_field = ? WHERE key = ? AND recipient_email = ?",
+                (domain, key, recipient_email)
+            )
+            conn.commit()
+            conn.close()
 
     elif app_type == POST_GRAD and success and len(info) >= 2:
+        school_raw = info[0].strip()
         school = info[0].strip().replace(" ", "_")
         program = info[1].strip().replace(" ", "_")
         key = f"{school}_{program}"
         if key not in masters_applications:
             masters_insert(key, recipient_email)
+            success, domain = guess_domain(school_raw, "university")
+            conn = sqlite3.connect(DB_PATH)
+            c    = conn.cursor()
+            c.execute(
+                "UPDATE masters SET domain_field = ? WHERE key = ? AND recipient_email = ?",
+                (domain, key, recipient_email)
+            )
+            conn.commit()
+            conn.close()
 
     elif app_type == SCHOLARSHIP and success and len(info) >= 1:
+        scholarship_raw = info[0].strip()
         scholarship = info[0].strip().replace(" ", "_")
         key = scholarship
         if key not in scholar_applications:
             scholar_insert(key, recipient_email)
+            success, domain = guess_domain(scholarship_raw, "scholarship")
+            conn = sqlite3.connect(DB_PATH)
+            c    = conn.cursor()
+            c.execute(
+                "UPDATE scholarships SET domain_field = ? WHERE key = ? AND recipient_email = ?",
+                (domain, key, recipient_email)
+            )
+            conn.commit()
+            conn.close()
 
     elif app_type == CLUB and success and len(info) >= 1:
+        club_raw = info[0].strip()
         club = info[0].strip().replace(" ", "_")
         key = club
         if key not in club_applications:
             club_insert(key, recipient_email)
+            success, domain = guess_domain(club_raw, "college club") # correct all others to be college club
+            conn = sqlite3.connect(DB_PATH)
+            c    = conn.cursor()
+            c.execute(
+                "UPDATE clubs SET domain_field = ? WHERE key = ? AND recipient_email = ?",
+                (domain, key, recipient_email)
+            )
+            conn.commit()
+            conn.close()
 
     #4. Determine action type from email
     print(datetime.now().strftime("%H:%M:%S"),task_uuid,"Determining action type from email...")

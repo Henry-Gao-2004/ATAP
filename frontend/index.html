@@ -234,8 +234,49 @@
             border: 2px solid currentColor;
         }
 
-
-
+        th.logo-col,
+        td.logo-col {
+            width: 80px;
+            text-align: center;
+            vertical-align: middle;
+        }
+        td.logo-col img {
+            max-height: 40px;
+            width: auto;
+            display: block;
+            margin: 0 auto;
+        }
+        td.logo-col .role {
+            font-weight: bold;
+            font-size: 0.9em;
+            white-space: normal;
+        }
+        td.logo-col .org {
+            font-style: italic;
+            font-size: 0.8em;
+            color: #555;
+            white-space: normal;
+        }
+        td.company-col {
+          text-align: center;
+          vertical-align: middle;
+          white-space: normal;
+        }
+        td.company-col img {
+          max-height: 40px;
+          width: auto;
+          display: block;
+          margin: 0 auto 8px;
+        }
+        td.company-col .role {
+          font-weight: bold;
+          margin-bottom: 4px;
+        }
+        td.company-col .org {
+          font-style: italic;
+          color: #555;
+          font-size: 0.9em;
+        }
     </style>
 </head>
 
@@ -269,10 +310,6 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <!-- NLP will populate this table body -->
-                    <tr class="empty-message">
-                        <td colspan="4">No applications detected yet</td>
-                    </tr>
                 </tbody>
             </table>
             <div class="no-results" id="home-no-results">No matching applications found</div>
@@ -283,17 +320,13 @@
             <table id="clubs-table">
                 <thead>
                     <tr>
-                        <th>Company</th>
+                        <th class="company-col">Company</th>
                         <th>Application</th>
                         <th>Interview</th>
                         <th>Decision</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <!-- NLP will populate this table body -->
-                    <tr class="empty-message">
-                        <td colspan="4">No applications detected yet</td>
-                    </tr>
                 </tbody>
             </table>
             <div class="no-results" id="home-no-results">No matching applications found</div>
@@ -304,7 +337,7 @@
             <table id="internships-table">
                 <thead>
                     <tr>
-                        <th>Company</th>
+                        <th class="company-col">Company</th>
                         <th>Application</th>
                         <th>Assessment</th>
                         <th>Interview</th>
@@ -312,10 +345,6 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <!-- NLP will populate this table body -->
-                    <tr class="empty-message">
-                        <td colspan="4">No applications detected yet</td>
-                    </tr>
                 </tbody>
             </table>
             <div class="no-results" id="home-no-results">No matching applications found</div>
@@ -326,17 +355,13 @@
             <table id="masters-table">
                 <thead>
                     <tr>
-                        <th>Company</th>
+                        <th class="company-col">Company</th>
                         <th>Application</th>
                         <th>Interview</th>
                         <th>Decision</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <!-- NLP will populate this table body -->
-                    <tr class="empty-message">
-                        <td colspan="4">No applications detected yet</td>
-                    </tr>
                 </tbody>
             </table>
             <div class="no-results" id="home-no-results">No matching applications found</div>
@@ -347,7 +372,7 @@
             <table id="scholar-table">
                 <thead>
                     <tr>
-                        <th>Company</th>
+                        <th class="company-col">Company</th>
                         <th>Application</th>
                         <th>Assessment</th>
                         <th>Interview</th>
@@ -355,10 +380,6 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <!-- NLP will populate this table body -->
-                    <tr class="empty-message">
-                        <td colspan="4">No applications detected yet</td>
-                    </tr>
                 </tbody>
             </table>
         </div>
@@ -369,6 +390,7 @@
 
         // Configure (connecting backend to frontend)
         const API_BASE_URL = 'http://localhost:8000'; // change
+        const LOGO_BASE_URL = 'http://localhost:5000';
 
         (host="0.0.0.0", port=8000)
 
@@ -545,7 +567,7 @@
               updatedCell.textContent = '—';
             }
             row.appendChild(updatedCell);
-            
+
             // Stage
             const stageCell = document.createElement('td');
             const stageSpan = document.createElement('span');
@@ -553,19 +575,18 @@
             stageSpan.textContent = app.stage;
             stageCell.appendChild(stageSpan);
             row.appendChild(stageCell);
-            
+
             tbody.appendChild(row);
         });
     }
 
-    // function for the other tabs 
+    // function for the other tabs
     function populateGenericTable(tabName, applications) {
-        const table = document.getElementById(`${tabName}-table`);
-        const tbody = table.querySelector('tbody');
-        const headers = table.querySelectorAll('thead th');
+        const table   = document.getElementById(`${tabName}-table`);
+        const tbody   = table.querySelector('tbody');
+        const headers = Array.from(table.querySelectorAll('thead th'));
 
         tbody.innerHTML = '';
-
         if (applications.length === 0) {
             const row = document.createElement('tr');
             row.className = 'empty-message';
@@ -575,74 +596,80 @@
         }
 
         applications.forEach(app => {
-            const row = document.createElement('tr');
-            const columnOrder = Array.from(headers).map(header => header.textContent.toLowerCase());
-            
+            const row         = document.createElement('tr');
+            const columnOrder = headers.map(h => h.textContent.toLowerCase());
+
             columnOrder.forEach(columnName => {
-                const cell = document.createElement('td');
-                
                 if (columnName === 'company') {
-                    const prettyName = (app.key || 'Unknown').replace(/_/g, ' ');
-                    cell.textContent = prettyName;
-                } else {
-                    const fieldNames = getFieldNames(tabName, columnName);
-                    const resultField = fieldNames.result;
-                    const confField = fieldNames.conf;
-                    const updateField = fieldNames.update;
-                    
-                    // Get status with better fallback logic
-                    let status = app[resultField] || 'no_update';
-                    const isComplete = app[confField] === 'complete';
-                    
-                    // First check for rejected status - this takes priority over everything
-                    if (status.toLowerCase() === 'reject') {
-                        cell.className = 'status-rejected';
-                        // cell.textContent = 'REJECTED';
-                        
-                        // Add rejection indicator (optional)
-                        const xIcon = document.createElement('span');
-                        xIcon.innerHTML = '&times; ';
-                        xIcon.style.color = 'inherit';
-                        cell.insertBefore(xIcon, cell.firstChild);
-                    } 
-                    // Then handle completed stages
-                    else if (isComplete) {
-                        cell.className = 'status-complete';
-                        // cell.textContent = status === 'no_update' ? 'COMPLETE' : status.toUpperCase();
-                        
-                        // Add completion indicator
-                        const dot = document.createElement('span');
-                        dot.className = 'status-dot status-dot-complete';
-                        cell.insertBefore(dot, cell.firstChild);
+                    const cell = document.createElement('td');
+                    cell.className = 'company-col';
+
+                    if (app.domain_field) {
+                        const img = document.createElement('img');
+                        img.src = `${LOGO_BASE_URL}/logo/${app.domain_field}.svg`;
+                        img.alt = (app.key || '').replace(/_/g, ' ');
+                        cell.appendChild(img);
                     }
-                    // Finally handle other statuses
-                    else {
-                        const displayStatus = status === 'no_update' ? 
-                            (app[confField] && app[confField] !== 'no_update' ? 'IN PROGRESS' : 'NO UPDATE') : 
-                            status.toUpperCase();
-                        
-                        cell.className = `status-${status.toLowerCase().replace(' ', '_')}`;
-                        // cell.textContent = displayStatus;
-                        
-                        // Add progress indicator
-                        const dot = document.createElement('span');
-                        dot.className = 'status-dot status-dot-incomplete';
-                        cell.insertBefore(dot, cell.firstChild);
+
+                    const pieces = (app.key || '').split('_');
+                    const orgPart  = pieces.shift().replace(/_/g, ' ');
+                    const rolePart = pieces.join(' ').replace(/_/g, ' ');
+
+                    if (rolePart) {
+                        const roleDiv = document.createElement('div');
+                        roleDiv.className = 'role';
+                        roleDiv.textContent = rolePart;
+                        cell.appendChild(roleDiv);
                     }
-                    
-                    // Enhanced tooltip with update time
-                    let tooltip = `${columnName.toUpperCase()}: ${status.toUpperCase()}`;
-                    if (app[updateField]) {
-                        tooltip += `\nUpdated: ${app[updateField]}`;
+
+                    if (orgPart) {
+                        const orgDiv = document.createElement('div');
+                        orgDiv.className = 'org';
+                        orgDiv.textContent = orgPart;
+                        cell.appendChild(orgDiv);
                     }
-                    cell.setAttribute('data-tooltip', tooltip);
+
+                    return;
                 }
-                
+
+                const cell       = document.createElement('td');
+                const fieldNames = getFieldNames(tabName, columnName);
+                const resultField= fieldNames.result;
+                const confField  = fieldNames.conf;
+                const updateField= fieldNames.update;
+
+                let status     = app[resultField] || 'no_update';
+                const isComplete = app[confField] === 'complete';
+
+                if (status.toLowerCase() === 'reject') {
+                    cell.className = 'status-rejected';
+                    const xIcon = document.createElement('span');
+                    xIcon.innerHTML = '&times; ';
+                    cell.insertBefore(xIcon, cell.firstChild);
+
+                } else if (isComplete) {
+                    cell.className = 'status-complete';
+                    const dot = document.createElement('span');
+                    dot.className = 'status-dot status-dot-complete';
+                    cell.insertBefore(dot, cell.firstChild);
+
+                } else {
+                    const displayStatus = status === 'no_update'
+                        ? (app[confField] && app[confField] !== 'no_update' ? 'IN PROGRESS' : 'NO UPDATE')
+                        : status.toUpperCase();
+                    cell.className = `status-${status.toLowerCase().replace(/\s+/g,'_')}`;
+                    const dot = document.createElement('span');
+                    dot.className = 'status-dot status-dot-incomplete';
+                    cell.insertBefore(dot, cell.firstChild);
+                }
+
+                let tooltip = `${columnName.toUpperCase()}: ${status.toUpperCase()}`;
+                if (app[updateField]) tooltip += `\nUpdated: ${app[updateField]}`;
+                cell.setAttribute('data-tooltip', tooltip);
                 row.appendChild(cell);
             });
-
             tbody.appendChild(row);
-        });
+          });
     }
 
     // Helper functions

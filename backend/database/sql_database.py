@@ -15,6 +15,7 @@ def create_schema(db_path: str = DB_PATH) -> None:
     CREATE TABLE IF NOT EXISTS internships (
         key               TEXT NOT NULL,
         recipient_email   TEXT NOT NULL,
+        domain_field      TEXT,
         app_conf          TEXT,
         app_result        TEXT,
         app_updated       TEXT,
@@ -36,6 +37,7 @@ def create_schema(db_path: str = DB_PATH) -> None:
     CREATE TABLE IF NOT EXISTS masters (
         key               TEXT NOT NULL,
         recipient_email   TEXT NOT NULL,
+        domain_field      TEXT,
         app_conf          TEXT,
         app_result        TEXT,
         app_updated       TEXT,
@@ -57,6 +59,7 @@ def create_schema(db_path: str = DB_PATH) -> None:
     CREATE TABLE IF NOT EXISTS scholarships (
         key               TEXT NOT NULL,
         recipient_email   TEXT NOT NULL,
+        domain_field      TEXT,
         app_conf          TEXT,
         app_result        TEXT,
         app_updated       TEXT,
@@ -75,6 +78,7 @@ def create_schema(db_path: str = DB_PATH) -> None:
     CREATE TABLE IF NOT EXISTS clubs (
         key               TEXT NOT NULL,
         recipient_email   TEXT NOT NULL,
+        domain_field      TEXT,
         app_conf          TEXT,
         app_result        TEXT,
         app_updated       TEXT,
