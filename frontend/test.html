@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Toggle Select in Table Header</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th {
+      background-color: #f2f2f2;
+      cursor: pointer;
+      position: relative;
+    }
+    .filter-select {
+      display: none;
+      width: 100%;
+      margin-top: 4px;
+    }
+    .th-wrapper {
+      display: flex;
+      flex-direction: column;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Filterable Table (Click Header to Show Filter)</h2>
+
+  <table id="instanceTable">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th onclick="toggleFilter()">
+          <div class="th-wrapper">
+            Status
+            <select id="statusFilter" class="filter-select" onchange="filterTable(event)">
+              <option value="">All</option>
+              <option value="Active">Active</option>
+              <option value="Inactive">Inactive</option>
+            </select>
+          </div>
+        </th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Alice</td>
+        <td>Admin</td>
+        <td>Active</td>
+      </tr>
+      <tr>
+        <td>Bob</td>
+        <td>User</td>
+        <td>Inactive</td>
+      </tr>
+      <tr>
+        <td>Charlie</td>
+        <td>Moderator</td>
+        <td>Active</td>
+      </tr>
+      <tr>
+        <td>Dana</td>
+        <td>User</td>
+        <td>Inactive</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <script>
+    function toggleFilter() {
+      const select = document.getElementById("statusFilter");
+      const isVisible = select.style.display === "block";
+      select.style.display = isVisible ? "none" : "block";
+    }
+
+    function filterTable(event) {
+      event.stopPropagation(); // prevent header click from toggling visibility
+      const filter = document.getElementById("statusFilter").value;
+      const table = document.getElementById("instanceTable");
+      const rows = table.getElementsByTagName("tbody")[0].getElementsByTagName("tr");
+
+      for (let i = 0; i < rows.length; i++) {
+        const statusCell = rows[i].getElementsByTagName("td")[2];
+        const status = statusCell.textContent || statusCell.innerText;
+        rows[i].style.display = (filter === "" || status === filter) ? "" : "none";
+      }
+    }
+  </script>
+
+</body>
+</html>

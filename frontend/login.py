@@ -25,9 +25,7 @@ USER_EMAIL = ""
 
 @app.route("/")
 def index():
-    if USER_EMAIL:
-        return redirect("/index.html")
-    return '<a href="/login">Login with Google</a>'
+    return render_template("index.html")
 
 @app.route("/login")
 def login():
@@ -75,7 +73,7 @@ def callback():
     # Redirect to localhost:5001 with email as query param
     return redirect(f"http://localhost:5001")
 
-@app.route("/index.html")
+@app.route("/")
 def index_html():
     return render_template("index.html", email=USER_EMAIL)
 

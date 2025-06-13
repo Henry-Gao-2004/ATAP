@@ -14,18 +14,46 @@
     <!-- CSS -->
 
     <style>
-        body {
+        .body {
             font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background-color: #f5f5f5;
+            background-color: white;
+            display: flex;
+            flex-direction: row;
         }
+
+        .head {
+            width: 100%;
+            color: white;
+            padding: 10px 20px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .head h1 {
+            margin: 0;
+            font-size: 1.5em;
+        }
+
+        .head .logo img {
+            height: 40px;
+            width: auto;
+        }
+        .sidebar {
+            width: 20%;
+            height: 100%;
+            background-color: white;
+            padding-left: 30px;
+            /* box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1); */
+        }
+
         .dashboard {
-            max-width: 1000px;
-            margin: 0 auto;
+            flex: 1;
             background-color: white;
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-left: 20px;
             padding: 20px;
         }
         .dashboard-header {
@@ -281,15 +309,8 @@
 </head>
 
 <body>
-    <div class="dashboard">
-        <div class="dashboard-title">
-        <h1>Dashboard</h1>
-        <div class="search-container">
-            <input type="text" class="search-input" placeholder="Search applications..." id="searchInput">
-        </div>
-    </div>
-
-         <!-- Tabs for different application types -->
+    <div class="head">
+        <!-- Tabs for different application types -->
         <div class="tabs">
             <div class="tab active" onclick="openTab(event, 'home')">Home</div>
             <div class="tab" onclick="openTab(event, 'clubs')">Clubs</div>
@@ -297,94 +318,140 @@
             <div class="tab" onclick="openTab(event, 'masters')">Masters Programs</div>
             <div class="tab" onclick="openTab(event, 'scholar')">Scholarships</div>
         </div>
-
-        <!-- Home Tab -->
-        <div id="home" class="tab-content active">
-            <table id="home-table">
-                <thead>
-                    <tr>
-                        <th>Application Name</th>
-                        <th>Application Type</th>
-                        <th>Last Updated</th>
-                        <th>Stage</th>
-                    </tr>
-                </thead>
-                <tbody>
-                </tbody>
-            </table>
-            <div class="no-results" id="home-no-results">No matching applications found</div>
-        </div>
-
-        <!-- Clubs Tab -->
-        <div id="clubs" class="tab-content">
-            <table id="clubs-table">
-                <thead>
-                    <tr>
-                        <th class="company-col">Company</th>
-                        <th>Application</th>
-                        <th>Interview</th>
-                        <th>Decision</th>
-                    </tr>
-                </thead>
-                <tbody>
-                </tbody>
-            </table>
-            <div class="no-results" id="home-no-results">No matching applications found</div>
-        </div>
-
-        <!-- Internships Tab -->
-        <div id="internships" class="tab-content">
-            <table id="internships-table">
-                <thead>
-                    <tr>
-                        <th class="company-col">Company</th>
-                        <th>Application</th>
-                        <th>Assessment</th>
-                        <th>Interview</th>
-                        <th>Offer</th>
-                    </tr>
-                </thead>
-                <tbody>
-                </tbody>
-            </table>
-            <div class="no-results" id="home-no-results">No matching applications found</div>
-        </div>
-
-        <!-- Masters Programs Tab -->
-        <div id="masters" class="tab-content">
-            <table id="masters-table">
-                <thead>
-                    <tr>
-                        <th class="company-col">Company</th>
-                        <th>Application</th>
-                        <th>Interview</th>
-                        <th>Decision</th>
-                    </tr>
-                </thead>
-                <tbody>
-                </tbody>
-            </table>
-            <div class="no-results" id="home-no-results">No matching applications found</div>
-        </div>
-
-        <!-- Scholar Tab -->
-        <div id="scholar" class="tab-content">
-            <table id="scholar-table">
-                <thead>
-                    <tr>
-                        <th class="company-col">Company</th>
-                        <th>Application</th>
-                        <th>Assessment</th>
-                        <th>Interview</th>
-                        <th>Decision</th>
-                    </tr>
-                </thead>
-                <tbody>
-                </tbody>
-            </table>
-        </div>
-        <div class="no-results" id="home-no-results">No matching applications found</div>
     </div>
+    <div class="body">
+        <div class="sidebar">
+            <div class="search-container">
+                <input type="text" class="search-input" placeholder="Search applications..." id="searchInput">
+            </div>
+
+            <h3>Filter Applications</h3>
+
+            <div class="filter-group">
+                <label>Application Type</label>
+                <div id="statusCheckboxes">
+                    <input type="checkbox" id="type-all" name="type-all" value="type-all" onchange="setFilter('type', '')"> 
+                    <label for="type-all"> All</label><br>
+                    <input type="checkbox" id="type-internship" name="type-internship" value="Internship" onchange="setFilter('type', 'Internship')"> 
+                    <label for="type-internship"> Internship</label><br>
+                    <input type="checkbox" id="type-scholarship" name="type-scholarship" value="Scholarship" onchange="setFilter('type', 'Scholarship')"> 
+                    <label for="type-scholarship"> Scholarship</label><br>
+                    <input type="checkbox" id="type-club" name="type-club" value="Club" onchange="setFilter('type', 'Club')"> 
+                    <label for="type-club"> Club</label><br>
+                    <input type="checkbox" id="type-education" name="type-education" value="Education" onchange="setFilter('type', 'Education')"> 
+                    <label for="type-education"> Education</label><br>
+                </div>
+            </div>
+            <div class="filter-group">
+                <label>Stage</label>
+                <div id="stageCheckboxes">
+                    <input type="checkbox" id="stage-all" name="stage-all" value="stage-all" onchange="setFilter('stage', '')"> 
+                    <label for="stage-all"> All</label><br>
+                    <input type="checkbox" id="stage-applied" name="stage-applied" value="Applied" onchange="flipStageFilter('stage', 'Applied')"> 
+                    <label for="stage-applied"> Applied</label><br>
+                    <input type="checkbox" id="stage-assessment" name="stage-assessment" value="Assessment" onchange="flipStageFilter('stage', 'Assessment')"> 
+                    <label for="stage-assessment"> Assessment</label><br>
+                    <input type="checkbox" id="stage-interview" name="stage-interview" value="Interview" onchange="flipStageFilter('stage', 'Interview')"> 
+                    <label for="stage-interview"> Interview</label><br>
+                    <input type="checkbox" id="stage-accepted" name="stage-accepted" value="Accepted" onchange="flipStageFilter('stage', 'Accepted')"> 
+                    <label for="stage-accepted"> Accepted</label><br>
+                    <input type="checkbox" id="stage-rejected" name="stage-rejected" value="Rejected" onchange="flipStageFilter('stage', 'Rejected')"> 
+                    <label for="stage-rejected"> Rejected</label><br>
+                </div>
+            </div>
+        </div>
+        <div class="dashboard">
+            
+
+            <!-- Home Tab -->
+            <div id="home" class="tab-content active">
+                <table id="home-table">
+                    <thead>
+                        <tr>
+                            <th>Application Name</th>
+                            <th>Application Type</th>
+                            <th>Last Updated</th>
+                            <th>Stage</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+                <div class="no-results" id="home-no-results">No matching applications found</div>
+            </div>
+
+            <!-- Clubs Tab -->
+            <div id="clubs" class="tab-content">
+                <table id="clubs-table">
+                    <thead>
+                        <tr>
+                            <th class="company-col">Company</th>
+                            <th>Application</th>
+                            <th>Interview</th>
+                            <th>Decision</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+                <div class="no-results" id="home-no-results">No matching applications found</div>
+            </div>
+
+            <!-- Internships Tab -->
+            <div id="internships" class="tab-content">
+                <table id="internships-table">
+                    <thead>
+                        <tr>
+                            <th class="company-col">Company</th>
+                            <th>Application</th>
+                            <th>Assessment</th>
+                            <th>Interview</th>
+                            <th>Offer</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+                <div class="no-results" id="home-no-results">No matching applications found</div>
+            </div>
+
+            <!-- Masters Programs Tab -->
+            <div id="masters" class="tab-content">
+                <table id="masters-table">
+                    <thead>
+                        <tr>
+                            <th class="company-col">Company</th>
+                            <th>Application</th>
+                            <th>Interview</th>
+                            <th>Decision</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+                <div class="no-results" id="home-no-results">No matching applications found</div>
+            </div>
+
+            <!-- Scholar Tab -->
+            <div id="scholar" class="tab-content">
+                <table id="scholar-table">
+                    <thead>
+                        <tr>
+                            <th class="company-col">Company</th>
+                            <th>Application</th>
+                            <th>Assessment</th>
+                            <th>Interview</th>
+                            <th>Decision</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+            <div class="no-results" id="home-no-results">No matching applications found</div>
+        </div>
+    </div>
+</body>
 
     <script>
 
