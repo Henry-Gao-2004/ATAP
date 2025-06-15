@@ -330,32 +330,32 @@
             <div class="filter-group">
                 <label>Application Type</label>
                 <div id="statusCheckboxes">
-                    <input type="checkbox" id="type-all" name="type-all" value="type-all" onchange="setFilter('type', '')"> 
+                    <input type="checkbox" id="type-all" name="type-all" value="type-all" class="type-filter" onchange="flipFilter('type','all')"> 
                     <label for="type-all"> All</label><br>
-                    <input type="checkbox" id="type-internship" name="type-internship" value="Internship" onchange="setFilter('type', 'Internship')"> 
+                    <input type="checkbox" id="type-internship" name="type-internship" value="Internship" class="type-filter" onchange="flipFilter('type','internship')"> 
                     <label for="type-internship"> Internship</label><br>
-                    <input type="checkbox" id="type-scholarship" name="type-scholarship" value="Scholarship" onchange="setFilter('type', 'Scholarship')"> 
+                    <input type="checkbox" id="type-scholarship" name="type-scholarship" value="Scholarship" class="type-filter" onchange="flipFilter('type','scholarship')"> 
                     <label for="type-scholarship"> Scholarship</label><br>
-                    <input type="checkbox" id="type-club" name="type-club" value="Club" onchange="setFilter('type', 'Club')"> 
+                    <input type="checkbox" id="type-club" name="type-club" value="Club" class="type-filter" onchange="flipFilter('type','club')"> 
                     <label for="type-club"> Club</label><br>
-                    <input type="checkbox" id="type-education" name="type-education" value="Education" onchange="setFilter('type', 'Education')"> 
+                    <input type="checkbox" id="type-education" name="type-education" value="Education" class="type-filter" onchange="flipFilter('type','education')"> 
                     <label for="type-education"> Education</label><br>
                 </div>
             </div>
             <div class="filter-group">
                 <label>Stage</label>
                 <div id="stageCheckboxes">
-                    <input type="checkbox" id="stage-all" name="stage-all" value="stage-all" onchange="setFilter('stage', '')"> 
+                    <input type="checkbox" id="stage-all" name="stage-all" value="stage-all" class="stage-filter" onchange="flipFilter('stage', 'all')"> 
                     <label for="stage-all"> All</label><br>
-                    <input type="checkbox" id="stage-applied" name="stage-applied" value="Applied" onchange="flipStageFilter('stage', 'Applied')"> 
+                    <input type="checkbox" id="stage-applied" name="stage-applied" value="Applied" class="stage-filter" onchange="flipFilter('stage', 'Applied')"> 
                     <label for="stage-applied"> Applied</label><br>
-                    <input type="checkbox" id="stage-assessment" name="stage-assessment" value="Assessment" onchange="flipStageFilter('stage', 'Assessment')"> 
+                    <input type="checkbox" id="stage-assessment" name="stage-assessment" value="Assessment" class="stage-filter" onchange="flipFilter('stage', 'Assessment')"> 
                     <label for="stage-assessment"> Assessment</label><br>
-                    <input type="checkbox" id="stage-interview" name="stage-interview" value="Interview" onchange="flipStageFilter('stage', 'Interview')"> 
+                    <input type="checkbox" id="stage-interview" name="stage-interview" value="Interview" class="stage-filter" onchange="flipFilter('stage', 'Interview')"> 
                     <label for="stage-interview"> Interview</label><br>
-                    <input type="checkbox" id="stage-accepted" name="stage-accepted" value="Accepted" onchange="flipStageFilter('stage', 'Accepted')"> 
+                    <input type="checkbox" id="stage-accepted" name="stage-accepted" value="Accepted" class="stage-filter" onchange="flipFilter('stage', 'Accepted')"> 
                     <label for="stage-accepted"> Accepted</label><br>
-                    <input type="checkbox" id="stage-rejected" name="stage-rejected" value="Rejected" onchange="flipStageFilter('stage', 'Rejected')"> 
+                    <input type="checkbox" id="stage-rejected" name="stage-rejected" value="Rejected" class="stage-filter" onchange="flipFilter('stage', 'Rejected')"> 
                     <label for="stage-rejected"> Rejected</label><br>
                 </div>
             </div>
@@ -481,6 +481,35 @@
 
             // Load data when tab is clicked
             loadTabData(tabName);
+        }
+
+        function flipFilter(type, value) {
+            const checkboxes = document.querySelectorAll('input.'+type+'-filter');
+            const checkboxID = type+'-'+value
+            const clickedCheckbox = document.getElementById(checkboxID);
+            const activeTab = document.querySelector('.tab-content.active');
+            const table = activeTab.querySelector('table');
+            const rows = table.querySelectorAll('tbody tr');
+
+            if (value === 'all') {
+                const allCheckbox = document.getElementById(type+'-all');
+                if (allCheckbox.checked){
+                    checkboxes.forEach(checkbox => {
+                        checkbox.checked = true;
+                    });
+                } else {
+                    checkboxes.forEach(checkbox => {
+                        checkbox.checked = false;
+                    });
+                }
+            } else {
+                if (document.getElementById(type+'-all').checked && !clickedCheckbox.checked) {
+                    document.getElementById(type+'-all').checked = false;
+                }
+                else if (checkboxes.length - 1 === Array.from(checkboxes).filter(cb => cb.checked).length) {
+                    document.getElementById(type+'-all').checked = true;
+                }
+            }
         }
 
         // Load data for a specific tab
