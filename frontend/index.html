@@ -572,6 +572,7 @@
                 document.getElementById(type + '-all').checked = true;
             }
         }
+        loadFilteredTabData('home')
     }
 
     // Load data for a specific tab
@@ -623,6 +624,83 @@
                     });
             }
         }
+    }
+    function loadFilteredTabData(tabName) {
+        showLoading(tabName);
+
+        const endpointMap = {
+            'home': null,
+            'internships': 'internships',
+            'masters': 'masters',
+            'scholar': 'scholarships',
+            'clubs': 'clubs'
+        };
+
+        const activeFilters = getActiveFilters();
+
+        if (tabName === 'home') {
+            Promise.all([
+                fetchFilteredData('internships', activeFilters),
+                fetchFilteredData('masters', activeFilters),
+                fetchFilteredData('scholarships', activeFilters),
+                fetchFilteredData('clubs', activeFilters)
+            ]).then(([internships, masters, scholarships, clubs]) => {
+                const combined = [
+                    ...internships.map(app => formatForHome(app, 'Internship')),
+                    ...masters.map(app => formatForHome(app, 'Masters')),
+                    ...scholarships.map(app => formatForHome(app, 'Scholarship')),
+                    ...clubs.map(app => formatForHome(app, 'Club'))
+                ];
+                combined.sort((a, b) => {
+                    const da = new Date(a.lastUpdated);
+                    const db = new Date(b.lastUpdated);
+                    return db - da;
+                });
+                populateHomeTable(combined);
+            }).catch(error => {
+                console.error('Error fetching filtered data:', error);
+                showError(tabName, 'Failed to load applications');
+            });
+        } else {
+            const endpoint = endpointMap[tabName];
+            if (endpoint) {
+                fetchFilteredData(endpoint, activeFilters)
+                    .then(data => populateGenericTable(tabName, data))
+                    .catch(error => {
+                        console.error('Error fetching filtered data:', error);
+                        showError(tabName, 'Failed to load applications');
+                    });
+            }
+        }
+    }
+
+    function getActiveFilters() {
+        const typeFilters = Array.from(document.querySelectorAll('.type-filter:checked')).map(cb => cb.value);
+        const stageFilters = Array.from(document.querySelectorAll('.stage-filter:checked')).map(cb => cb.value);
+
+        return {
+            types: typeFilters.includes('type-all') ? [] : typeFilters,
+            stages: stageFilters.includes('stage-all') ? [] : stageFilters
+        };
+    }
+
+    function fetchFilteredData(endpoint, filters) {
+        const queryParams = new URLSearchParams();
+
+        if (filters.types.length > 0) {
+            queryParams.append('types', filters.types.join(','));
+        }
+        if (filters.stages.length > 0) {
+            queryParams.append('stages', filters.stages.join(','));
+        }
+
+        return fetch(`${API_BASE_URL}/${endpoint}?${queryParams.toString()}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            });
     }
 
     // Fetch data from API
