@@ -384,9 +384,9 @@
                     <input type="checkbox" id="type-all" name="type-all" value="type-all" class="type-filter"
                         onchange="flipFilter('type','all')">
                     <label for="type-all"> All</label><br>
-                    <input type="checkbox" id="type-internship" name="type-internship" value="Internship"
+                    <input type="checkbox" id="type-Internship" name="type-Internship" value="Internship"
                         class="type-filter" onchange="flipFilter('type','internship')">
-                    <label for="type-internship"> Internship</label><br>
+                    <label for="type-Internship"> Internship</label><br>
                     <input type="checkbox" id="type-scholarship" name="type-scholarship" value="Scholarship"
                         class="type-filter" onchange="flipFilter('type','scholarship')">
                     <label for="type-scholarship"> Scholarship</label><br>
@@ -404,18 +404,18 @@
                     <input type="checkbox" id="stage-all" name="stage-all" value="stage-all" class="stage-filter"
                         onchange="flipFilter('stage', 'all')">
                     <label for="stage-all"> All</label><br>
-                    <input type="checkbox" id="stage-applied" name="stage-applied" value="Applied" class="stage-filter"
+                    <input type="checkbox" id="stage-App" name="stage-App" value="App" class="stage-filter"
                         onchange="flipFilter('stage', 'Applied')">
-                    <label for="stage-applied"> Applied</label><br>
-                    <input type="checkbox" id="stage-assessment" name="stage-assessment" value="Assessment"
+                    <label for="stage-App"> Applied</label><br>
+                    <input type="checkbox" id="stage-Assess" name="stage-Assess" value="Assess"
                         class="stage-filter" onchange="flipFilter('stage', 'Assessment')">
-                    <label for="stage-assessment"> Assessment</label><br>
+                    <label for="stage-Assess"> Assessment</label><br>
                     <input type="checkbox" id="stage-interview" name="stage-interview" value="Interview"
                         class="stage-filter" onchange="flipFilter('stage', 'Interview')">
                     <label for="stage-interview"> Interview</label><br>
-                    <input type="checkbox" id="stage-accepted" name="stage-accepted" value="Accepted"
-                        class="stage-filter" onchange="flipFilter('stage', 'Accepted')">
-                    <label for="stage-accepted"> Accepted</label><br>
+                    <input type="checkbox" id="stage-Offer" name="stage-Offer" value="Offer"
+                        class="stage-filter" onchange="flipFilter('stage', 'Offer')">
+                    <label for="stage-Offer"> Accepted</label><br>
                     <input type="checkbox" id="stage-rejected" name="stage-rejected" value="Rejected"
                         class="stage-filter" onchange="flipFilter('stage', 'Rejected')">
                     <label for="stage-rejected"> Rejected</label><br>
@@ -651,12 +651,18 @@
                     ...scholarships.map(app => formatForHome(app, 'Scholarship')),
                     ...clubs.map(app => formatForHome(app, 'Club'))
                 ];
-                combined.sort((a, b) => {
+                const filtered = combined.filter(app => {
+                    // console.log(app);
+                    const typeChecked = document.getElementById("type-"+app.type).checked;
+                    const stageChecked = document.getElementById("stage-"+app.stage).checked;
+                    return typeChecked && stageChecked;
+                });
+                filtered.sort((a, b) => {
                     const da = new Date(a.lastUpdated);
                     const db = new Date(b.lastUpdated);
                     return db - da;
                 });
-                populateHomeTable(combined);
+                populateHomeTable(filtered);
             }).catch(error => {
                 console.error('Error fetching filtered data:', error);
                 showError(tabName, 'Failed to load applications');
