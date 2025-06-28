@@ -4,11 +4,14 @@ import json
 import requests
 from pathlib import Path
 from flask import Flask, request, jsonify, send_file, abort
+from flask_cors import CORS
 from dotenv import load_dotenv
 
 from database.workflow_final import final_workflow
 
 app = Flask(__name__)
+CORS(app, origins=["chrome-extension://kijgnlicjmdbcokjpolmglfnolfhlhjj"])
+
 
 # ─── Logo.dev proxy setup ────────────────────────────────────────────────────
 

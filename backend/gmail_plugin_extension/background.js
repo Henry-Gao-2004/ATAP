@@ -1,4 +1,4 @@
-let ipv4s = ["192.168.56.1", "192.168.1.74"]
+let ipv4s = ["192.168.1.65", "192.168.1.74"]
 let lastChecked = Date.now();
 
 chrome.runtime.onInstalled.addListener(() => {
